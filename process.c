@@ -27,19 +27,19 @@ process_t* createProcess(int pid, int arrivalTime, int executionTime, int isPara
 PQ_t InitializePQ(int numElements) {
     if(numElements == 0) {
         printf("Error in numElements in Initialize method");
-        return -1;
+        return 1;
     }
     PQ_t head = NULL;
     head = (struct Heap*) calloc(1, sizeof (struct Heap));
     if (head == NULL) {
         printf("Error allocating Heap in Initialize method \n");
-        return -1;
+        return 1;
     }
 
     head->processes = (process_t**) calloc(numElements + 1 , sizeof (process_t*));
     if(head->processes == NULL) {
         printf("Error allocating processes in Initialize method \n");
-        return -1;
+        return 1;
     }
 
     head->capacity = numElements;
@@ -104,14 +104,6 @@ process_t* DeleteMinRemainTimeProcess(PQ_t head) {
 
 void DestroyPQ(PQ_t head) {
 
-    void* prev_ptr = NULL;
-//    for (int i = 0; i < head->capacity ; i++) {
-//        if(head->processes[i] == NULL || head->processes[i] == prev_ptr) {
-//            break;
-//        }
-//        prev_ptr = head->processes[i];
-//        free(head->processes[i]);
-//    }
     free(head->processes[0]);
     free(head->processes);
     free(head);
