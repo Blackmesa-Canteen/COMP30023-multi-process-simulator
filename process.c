@@ -18,7 +18,7 @@ process_t* createProcess(int pid, int arrivalTime, int executionTime, int isPara
     newProcess->waitingTime = 0;
     newProcess->remainingTime = executionTime;
 
-    newProcess->isFinished = 0;
+    newProcess->isRunning = 0;
     newProcess->isParallelisable = isParallelisable;
 
     return newProcess;

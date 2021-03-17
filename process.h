@@ -13,7 +13,7 @@ struct Process{
     int waitingTime;
     int remainingTime;
 
-    int isFinished;
+    int isRunning;
     int isParallelisable;
 };
 
