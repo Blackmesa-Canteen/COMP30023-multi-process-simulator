@@ -156,7 +156,7 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
             // when it is the time for the process arrive,
             // insert the one to the q
             // and update(clean) the input_list
-            if(globalTimer >= input_process_ptr->time_arrived) {
+            while (globalTimer == input_process_ptr->time_arrived) {
 
                 // insert the one into the PQ in remaining time
                 InsertPQ(createProcess(input_process_ptr->process_id,
@@ -171,6 +171,14 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
                 // pick the shortest one when a new process runs from running PQ.
                 minRemainTimeProcess_ptr = FindMinRemainTimeProcess(pq);
                 free(input_process_ptr);
+
+                // Handling  the same time:
+                // pick the next one in the input_list, in case of the same time input
+                // if the input_list is empty, skip this loop
+                if(input_list_head->next == NULL) {
+                    break;
+                }
+                input_process_ptr = GetFromInputList(input_list_head);
             }
 
             // if there is no progress in the running queue
