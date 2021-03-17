@@ -10,7 +10,7 @@
 
 #define MAXLENGTH 513
 
-void SimRun(input_node_ptr input_list_head, PQ_t pq, int numCPU, int useOwnScheduler);
+void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int useOwnScheduler);
 
 int main(int argc, char** argv) {
 
@@ -69,12 +69,10 @@ int main(int argc, char** argv) {
 
     int lineCounter = 0;
     while (fgets(buffer, MAXLENGTH, fp) != NULL) {
-        lineCounter++; // 累计行数
+        lineCounter++; // count lines(processes)
     }
     fclose(fp);
 
-    printf("Debug: 文件行数：%d\n", lineCounter);
-    PQ_t pq = InitializePQ(lineCounter);
     // PQ_t pq = InitializePQ(lineCounter);
 
     fp = fopen(fileName, "r");
@@ -86,6 +84,8 @@ int main(int argc, char** argv) {
     // linked list to store items from the input file
     input_node_ptr input_list_head = NULL;
 
+    // extract process info from the file
+    // and store them into a linked list
     while (fgets(buffer, MAXLENGTH, fp) != NULL) {
         if(buffer[0] == '\n') break;
         *start = -1;
@@ -94,16 +94,16 @@ int main(int argc, char** argv) {
         processId = ExtractIntNumber(buffer, start, end);
         executionTime = ExtractIntNumber(buffer, start, end);
         parallelisable = ExtractPN(buffer, start, end);
-        printf("Debug %d, %d, %d, %d\n", timeArrived, processId,executionTime, parallelisable);
+        // printf("Debug %d, %d, %d, %d\n", timeArrived, processId,executionTime, parallelisable);
         input_list_head = InputListInsert(input_list_head, timeArrived, processId,executionTime, parallelisable);
 
-        printf("-----------\n");
+        // printf("-----------\n");
     }
     free(start);
     free(end);
     free(buffer);
 
-    SimRun(input_list_head, pq, numProcessors, useOwnScheduler);
+    SimRun(input_list_head, lineCounter, numProcessors, useOwnScheduler);
 
 
 //    process_t* process1 = createProcess(1, 1, 2, 0);
@@ -127,7 +127,7 @@ int main(int argc, char** argv) {
 //    printf("%d\n", (DeleteMinRemainTimeProcess(pq))->remainingTime);
 //    printf("%d\n", (DeleteMinRemainTimeProcess(pq))->remainingTime);
 
-    DestroyPQ(pq);
+//    DestroyPQ(pq);
 //    free(process1);
 //    free(process2);
 //    free(process3);
@@ -136,12 +136,15 @@ int main(int argc, char** argv) {
     return 0;
 }
 
-void SimRun(input_node_ptr input_list_head, PQ_t pq, int numCPU, int useOwnScheduler) {
+void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int useOwnScheduler) {
     int globalTimer = 0;
     input_node_ptr input_process_ptr;
     process_t* minRemainTimeProcess_ptr;
 
     if (numCPU == 1) {
+
+        PQ_t pq = InitializePQ(numMainProcess, 0);
+
         // if there are still items in the input_list
         while (input_list_head->next != NULL) {
 
@@ -153,14 +156,15 @@ void SimRun(input_node_ptr input_list_head, PQ_t pq, int numCPU, int useOwnSched
             // when it is the time for the process arrive,
             // insert the one to the q
             // and update(clean) the input_list
-            if(globalTimer == input_process_ptr->time_arrived) {
+            if(globalTimer >= input_process_ptr->time_arrived) {
 
                 // insert the one into the PQ in remaining time
                 InsertPQ(createProcess(input_process_ptr->process_id,
                                        input_process_ptr->time_arrived,
                                        input_process_ptr->execution_time,
                                        input_process_ptr->parallelisable)
-                        , pq);
+                         , pq);
+
 
                 // remove the running progress from input_list
                 UpdateInputList(input_list_head);
@@ -204,6 +208,9 @@ void SimRun(input_node_ptr input_list_head, PQ_t pq, int numCPU, int useOwnSched
             }
         }
 
+        // list is empty, clear the input_list dummy head
+        free(input_list_head);
+
         // if the list is empty, but there are still something running
         while (!IsEmptyPQ(pq)) {
 
@@ -232,6 +239,8 @@ void SimRun(input_node_ptr input_list_head, PQ_t pq, int numCPU, int useOwnSched
                 }
             }
         }
+
+        free(pq);
     }
 
 }

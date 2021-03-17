@@ -19,16 +19,17 @@ struct Process{
 
 typedef struct Process process_t;
 
-// Using binary-heap and priority queue
+// Using binary-heap to represent the CPU with processes
 struct Heap {
     int size;
     int capacity;
+    int cpuId;
     process_t** processes;
 };
 typedef struct Heap* PQ_t;
 
 process_t* createProcess(int pid, int arrivalTime, int executionTime, int isParallelisable);
-PQ_t InitializePQ(int numElements);
+PQ_t InitializePQ(int numElements, int cpuId);
 void DestroyPQ(PQ_t head);
 void DropPQ(PQ_t head);
 void InsertPQ(process_t* newProcess, PQ_t head);

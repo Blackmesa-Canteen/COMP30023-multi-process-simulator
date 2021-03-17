@@ -24,7 +24,7 @@ process_t* createProcess(int pid, int arrivalTime, int executionTime, int isPara
     return newProcess;
 }
 
-PQ_t InitializePQ(int numElements) {
+PQ_t InitializePQ(int numElements, int cpuId) {
     if(numElements == 0) {
         printf("Error in numElements in Initialize method");
         return 1;
@@ -44,6 +44,7 @@ PQ_t InitializePQ(int numElements) {
 
     head->capacity = numElements;
     head->size = 0;
+    head->cpuId = cpuId;
 
     // init dummyHead's remaining time to the smallest int
     process_t* dummyHead = (process_t*) calloc(1 ,sizeof (process_t));
