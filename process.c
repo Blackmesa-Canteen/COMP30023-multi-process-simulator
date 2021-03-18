@@ -8,7 +8,7 @@
 #define MIN_INT -32767
 
 
-process_t* createProcess(int pid, int arrivalTime, int executionTime, int isParallelisable) {
+process_t* createProcess(int pid, int arrivalTime, int executionTime, int isParallelisable, int cpuId) {
 
     process_t* newProcess = (process_t*) calloc(1, sizeof (process_t));
     newProcess->pid = pid;
@@ -20,6 +20,7 @@ process_t* createProcess(int pid, int arrivalTime, int executionTime, int isPara
 
     newProcess->isRunning = 0;
     newProcess->isParallelisable = isParallelisable;
+    newProcess->cpuId = cpuId;
 
     return newProcess;
 }
@@ -27,19 +28,19 @@ process_t* createProcess(int pid, int arrivalTime, int executionTime, int isPara
 PQ_t InitializePQ(int numElements, int cpuId) {
     if(numElements == 0) {
         printf("Error in numElements in Initialize method");
-        return 1;
+        return NULL;
     }
     PQ_t head = NULL;
     head = (struct Heap*) calloc(1, sizeof (struct Heap));
     if (head == NULL) {
         printf("Error allocating Heap in Initialize method \n");
-        return 1;
+        return NULL;
     }
 
     head->processes = (process_t**) calloc(numElements + 1 , sizeof (process_t*));
     if(head->processes == NULL) {
         printf("Error allocating processes in Initialize method \n");
-        return 1;
+        return NULL;
     }
 
     head->capacity = numElements;
@@ -129,4 +130,28 @@ int IsEmptyPQ(PQ_t head) {
 }
 int IsFullPQ(PQ_t head) {
     return head->capacity == head->size;
+}
+
+int CountTotalRemainingTime(PQ_t head) {
+    if(IsEmptyPQ(head)) {
+        return 0;
+    }
+
+    int totalRemainingTime = 0;
+
+    for(int i = 1; i <= head->size; i++) {
+        totalRemainingTime += head->processes[i]->remainingTime;
+    }
+
+    return totalRemainingTime;
+}
+
+int IsAllCpuPQEmpty(PQ_t* cpuPQList, int numCPU) {
+    for (int i = 0; i < numCPU; i++) {
+        if (!IsEmptyPQ(cpuPQList[i])) {
+            return 0;
+        }
+    }
+
+    return 1;
 }

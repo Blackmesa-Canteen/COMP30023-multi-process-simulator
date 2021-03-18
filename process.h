@@ -15,6 +15,7 @@ struct Process{
 
     int isRunning;
     int isParallelisable;
+    int cpuId;
 };
 
 typedef struct Process process_t;
@@ -28,7 +29,7 @@ struct Heap {
 };
 typedef struct Heap* PQ_t;
 
-process_t* createProcess(int pid, int arrivalTime, int executionTime, int isParallelisable);
+process_t* createProcess(int pid, int arrivalTime, int executionTime, int isParallelisable, int cpuId);
 PQ_t InitializePQ(int numElements, int cpuId);
 void DestroyPQ(PQ_t head);
 void DropPQ(PQ_t head);
@@ -37,5 +38,8 @@ process_t* DeleteMinRemainTimeProcess(PQ_t head);
 process_t* FindMinRemainTimeProcess(PQ_t head);
 int IsEmptyPQ(PQ_t head);
 int IsFullPQ(PQ_t head);
+
+int CountTotalRemainingTime(PQ_t head);
+int IsAllCpuPQEmpty(PQ_t* cpuPQList, int numCPU);
 
 #endif //COMP30023_2021_PROJECT_1_PROCESS_H
