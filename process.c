@@ -123,7 +123,7 @@ process_t* FindMinRemainTimeProcess(PQ_t head) {
 
     printf("Empty PQ when find Min");
 
-    return head->processes[0];
+    return NULL;
 }
 int IsEmptyPQ(PQ_t head) {
     return head->size == 0;

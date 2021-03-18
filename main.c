@@ -284,6 +284,7 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
 
                 // free and delete the ended progress
                 free(DeleteMinRemainTimeProcess(pq));
+                minRemainTimeProcess_ptr = NULL;
 
                 // pick one new shortest process from running pq
                 if(!IsEmptyPQ(pq)) {
@@ -295,7 +296,7 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
         // ending, free all cpu running PQ
         DestroyPQ(pq);
 
-    } else if (numCPU == 2) {
+    } else if (numCPU >= 2) {
 
         PQ_t* cpuPQList = (PQ_t*) calloc(numCPU, sizeof (PQ_t));
         for(int i = 0; i < numCPU; i++) {
@@ -384,6 +385,7 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
                     }
                 }
             }
+
             // if there is no progress in every CPU running queue
             if (IsAllCpuPQEmpty(cpuPQList, numCPU)) {
 
@@ -397,10 +399,10 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
                 for(int i = 0 ; i < numCPU; i++) {
 
                     // if the min process ptr points to NULL, find next cpu's
-//                        if(cpuMinProcess_ptr_list[i] == NULL) {
-//                            printf("the min process ptr points to NULL\n");
-//                            continue;
-//                        }
+                    if(cpuMinProcess_ptr_list[i] == NULL) {
+                        // printf("the min process ptr points to NULL\n");
+                        continue;
+                    }
 
                     if(cpuMinProcess_ptr_list[i]->isRunning == 0) {
                         printf("%d,RUNNING,pid=%d,remaining_time=%d,cpu=%d\n",
@@ -419,10 +421,10 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
 
             for(int i = 0 ; i < numCPU; i++) {
                 // if the min process ptr points to NULL, find next cpu's
-//                    if(cpuMinProcess_ptr_list[i] == NULL) {
-//                        printf("the min process ptr points to NULL\n");
-//                        continue;
-//                    }
+                if(cpuMinProcess_ptr_list[i] == NULL) {
+                    // printf("the min process ptr points to NULL\n");
+                    continue;
+                }
 
                 // check the shortest one, whether it is finished
                 if (cpuMinProcess_ptr_list[i]->remainingTime == 0) {
@@ -443,6 +445,7 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
 
                     // free and delete the ended progress from CPU running pq
                     free(DeleteMinRemainTimeProcess(cpuPQList[i]));
+                    cpuMinProcess_ptr_list[i] = NULL;
 
                     // pick one new shortest process from CPU running pq
                     if(!IsEmptyPQ(cpuPQList[i])) {
@@ -456,55 +459,72 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
         // list is empty, clear the input_list dummy head
         free(input_list_head);
 
-        for (int i = 0; i < numCPU; i++) {
+        // if there are no more processs arrive, but there are still something remaining in the CPU
+        // if all cpu don't have procs, done!
+        while(!IsAllCpuPQEmpty(cpuPQList, numCPU)) {
 
-            // if there are no more processs arrive, but there are still something remaining in the CPU
-            while (!IsEmptyPQ(cpuPQList[i])) {
-                // pick the shortest one to run
-                // minRemainTimeProcess_ptr = FindMinRemainTimeProcess(pq);
-                if(cpuMinProcess_ptr_list[i]->isRunning == 0) {
-                    printf("%d,RUNNING,pid=%d,remaining_time=%d,cpu=%d\n",
-                           globalTimer,
-                           cpuMinProcess_ptr_list[i]->pid,
-                           cpuMinProcess_ptr_list[i]->remainingTime,
-                           cpuMinProcess_ptr_list[i]->cpuId);
-                    cpuMinProcess_ptr_list[i]->isRunning = 1;
-                }
-                cpuMinProcess_ptr_list[i]->remainingTime -= 1;
+            for (int i = 0; i < numCPU; i++) {
 
-                globalTimer++;
-                // check the shortest one, whether it is finished
-                if (cpuMinProcess_ptr_list[i]->remainingTime == 0) {
-                    printf("%d,FINISHED,pid=%d,proc_remaining=%d\n",
-                           globalTimer,
-                           cpuMinProcess_ptr_list[i]->pid,
-                           cpuPQList[i]->size - 1);
-
-                    // collect statistic data
-                    int deltaTime = globalTimer - cpuMinProcess_ptr_list[i]->arrivalTime;
-                    totalDeltaTime += deltaTime;
-                    float timeOverhead = (float)deltaTime / (cpuMinProcess_ptr_list[i]->burstTime);
-                    if(timeOverhead > maxTimeOverhead) {
-                        maxTimeOverhead = timeOverhead;
+                // don't need to worry about free cpu
+                if (!IsEmptyPQ(cpuPQList[i])) {
+                    // pick the shortest one to run
+                    // minRemainTimeProcess_ptr = FindMinRemainTimeProcess(pq);
+                    if (cpuMinProcess_ptr_list[i]->isRunning == 0) {
+                        printf("%d,RUNNING,pid=%d,remaining_time=%d,cpu=%d\n",
+                               globalTimer,
+                               cpuMinProcess_ptr_list[i]->pid,
+                               cpuMinProcess_ptr_list[i]->remainingTime,
+                               cpuMinProcess_ptr_list[i]->cpuId);
+                        cpuMinProcess_ptr_list[i]->isRunning = 1;
                     }
-                    totalTimeOverhead += timeOverhead;
-                    numRunnedProcesses++;
+                    cpuMinProcess_ptr_list[i]->remainingTime -= 1;
+                }
+            }
 
-                    // free and delete the ended progress
-                    free(DeleteMinRemainTimeProcess(cpuPQList[i]));
+            globalTimer++;
 
-                    // pick one new shortest process from running pq
-                    if(!IsEmptyPQ(cpuPQList[i])) {
-                        cpuMinProcess_ptr_list[i] = FindMinRemainTimeProcess(cpuPQList[i]);
+            for (int i = 0; i < numCPU; i++) {
+                // don't need to worry about free cpu
+                if(!IsEmptyPQ(cpuPQList[i])) {
+                    // check the shortest one, whether it is finished
+                    if (cpuMinProcess_ptr_list[i]->remainingTime == 0) {
+                        printf("%d,FINISHED,pid=%d,proc_remaining=%d\n",
+                               globalTimer,
+                               cpuMinProcess_ptr_list[i]->pid,
+                               cpuPQList[i]->size - 1);
+
+                        // collect statistic data
+                        int deltaTime = globalTimer - cpuMinProcess_ptr_list[i]->arrivalTime;
+                        totalDeltaTime += deltaTime;
+                        float timeOverhead = (float)deltaTime / (cpuMinProcess_ptr_list[i]->burstTime);
+                        if(timeOverhead > maxTimeOverhead) {
+                            maxTimeOverhead = timeOverhead;
+                        }
+                        totalTimeOverhead += timeOverhead;
+                        numRunnedProcesses++;
+
+                        // free and delete the ended progress
+                        // free and delete the ended progress from CPU running pq
+                        free(DeleteMinRemainTimeProcess(cpuPQList[i]));
+                        cpuMinProcess_ptr_list[i] = NULL;
+
+                        // pick one new shortest process from running pq
+                        if(!IsEmptyPQ(cpuPQList[i])) {
+                            cpuMinProcess_ptr_list[i] = FindMinRemainTimeProcess(cpuPQList[i]);
+                        }
                     }
                 }
             }
+
         }
+
 
         // ending, free all cpu running PQ
         for(int i = 0; i < numCPU; i++) {
             DestroyPQ(cpuPQList[i]);
         }
+        free(cpuPQList);
+        free(cpuMinProcess_ptr_list);
     }
 
     printf("Turnaround time %d\n", RoundToInt((float)totalDeltaTime / numRunnedProcesses));
