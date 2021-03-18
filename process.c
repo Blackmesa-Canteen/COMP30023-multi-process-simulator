@@ -146,6 +146,22 @@ int CountTotalRemainingTime(PQ_t head) {
     return totalRemainingTime;
 }
 
+int CountAllProcesses(PQ_t* cpuPQList, int numCPU) {
+    int res = 0;
+
+    for(int i = 0; i < numCPU; i++) {
+        PQ_t cpuPQ = cpuPQList[i];
+        if (IsEmptyPQ(cpuPQ)) {
+            continue;
+        }
+
+        res += cpuPQ->size;
+    }
+
+    return res;
+}
+
+
 int IsAllCpuPQEmpty(PQ_t* cpuPQList, int numCPU) {
     for (int i = 0; i < numCPU; i++) {
         if (!IsEmptyPQ(cpuPQList[i])) {

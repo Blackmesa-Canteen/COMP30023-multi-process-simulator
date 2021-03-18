@@ -41,5 +41,6 @@ int IsFullPQ(PQ_t head);
 
 int CountTotalRemainingTime(PQ_t head);
 int IsAllCpuPQEmpty(PQ_t* cpuPQList, int numCPU);
+int CountAllProcesses(PQ_t* cpuPQList, int numCPU);
 
 #endif //COMP30023_2021_PROJECT_1_PROCESS_H

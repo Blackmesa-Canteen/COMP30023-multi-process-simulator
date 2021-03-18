@@ -298,6 +298,8 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
 
     } else if (numCPU >= 2) {
 
+        int procCounter = 0;
+
         PQ_t* cpuPQList = (PQ_t*) calloc(numCPU, sizeof (PQ_t));
         for(int i = 0; i < numCPU; i++) {
             cpuPQList[i] = InitializePQ(numMainProcess, i);
@@ -427,11 +429,12 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
                 }
 
                 // check the shortest one, whether it is finished
+                procCounter = CountAllProcesses(cpuPQList, numCPU);
                 if (cpuMinProcess_ptr_list[i]->remainingTime == 0) {
                     printf("%d,FINISHED,pid=%d,proc_remaining=%d\n",
                            globalTimer,
                            cpuMinProcess_ptr_list[i]->pid,
-                           cpuPQList[i]->size - 1);
+                           --procCounter);
 
                     // collect statistic data
                     int deltaTime = globalTimer - cpuMinProcess_ptr_list[i]->arrivalTime;
@@ -487,11 +490,12 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
                 // don't need to worry about free cpu
                 if(!IsEmptyPQ(cpuPQList[i])) {
                     // check the shortest one, whether it is finished
+                    procCounter = CountAllProcesses(cpuPQList, numCPU);
                     if (cpuMinProcess_ptr_list[i]->remainingTime == 0) {
                         printf("%d,FINISHED,pid=%d,proc_remaining=%d\n",
                                globalTimer,
                                cpuMinProcess_ptr_list[i]->pid,
-                               cpuPQList[i]->size - 1);
+                               --procCounter);
 
                         // collect statistic data
                         int deltaTime = globalTimer - cpuMinProcess_ptr_list[i]->arrivalTime;
