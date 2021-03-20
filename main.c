@@ -298,6 +298,7 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
 
     } else if (numCPU >= 2) {
 
+        input_list_head = SortInputListByRemain(input_list_head);
         int procCounter = 0;
 
         PQ_t* cpuPQList = (PQ_t*) calloc(numCPU, sizeof (PQ_t));
