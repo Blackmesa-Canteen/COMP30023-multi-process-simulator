@@ -94,12 +94,47 @@ process_t* DeleteMinRemainTimeProcess(PQ_t head) {
 
         if (lastProcess->remainingTime > head->processes[child]->remainingTime) {
             head->processes[i] = head->processes[child];
+        } else if (lastProcess->remainingTime < head->processes[child]->remainingTime) {
+            break;
         } else {
+//            for(i = 1; i < head->size; i++) {
+//                process_t * temp = NULL;
+//                temp = head->processes[i];
+//                head->processes[i] = head->processes[i+1];
+//                head->processes[i+1] = temp;
+//            }
+//            head->processes[i] = lastProcess;
+//            return minRemainTimeProcess;
             break;
         }
     }
 
     head->processes[i] = lastProcess;
+
+    // add pid sorting
+    for (i = 1; (2 * i <= head->size); i = child) {
+        process_t* temp = NULL;
+        child = 2 * i;
+        if (head->processes[i]->remainingTime == head->processes[child]->remainingTime) {
+            if(head->processes[i]->pid > head->processes[child]->pid) {
+                // head->processes[i] = head->processes[child];
+                temp = head->processes[i];
+                head->processes[i] = head->processes[child];
+                head->processes[child] = temp;
+
+            }
+        }
+
+        if (head->processes[child]->remainingTime == head->processes[child+1]->remainingTime) {
+            if(head->processes[child]->pid > head->processes[child+1]->pid) {
+                // head->processes[i] = head->processes[child];
+                temp = head->processes[child];
+                head->processes[child] = head->processes[child+1];
+                head->processes[child+1] = temp;
+            }
+        }
+    }
+
     return minRemainTimeProcess;
 }
 
@@ -155,7 +190,11 @@ int CountAllProcesses(PQ_t* cpuPQList, int numCPU) {
             continue;
         }
 
-        res += cpuPQ->size;
+        for(int j = 1; j <= cpuPQList[i]->size; j++) {
+            if(cpuPQList[i]->processes[j]->remainingTime != 0) {
+                res++;
+            }
+        }
     }
 
     return res;

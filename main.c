@@ -144,6 +144,9 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
     input_node_ptr input_process_ptr;
 
     if (numCPU == 1) {
+        input_list_head = SortInputListByPid(input_list_head);
+        input_list_head = SortInputListByArrival(input_list_head);
+
         // init one CPU running Priority queue
         PQ_t pq = InitializePQ(numMainProcess, 0);
         process_t* minRemainTimeProcess_ptr = NULL;
@@ -298,7 +301,9 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
 
     } else if (numCPU >= 2) {
 
+        input_list_head = SortInputListByPid(input_list_head);
         input_list_head = SortInputListByRemain(input_list_head);
+        input_list_head = SortInputListByArrival(input_list_head);
         int procCounter = 0;
 
         PQ_t* cpuPQList = (PQ_t*) calloc(numCPU, sizeof (PQ_t));
@@ -435,7 +440,7 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
                     printf("%d,FINISHED,pid=%d,proc_remaining=%d\n",
                            globalTimer,
                            cpuMinProcess_ptr_list[i]->pid,
-                           --procCounter);
+                           procCounter);
 
                     // collect statistic data
                     int deltaTime = globalTimer - cpuMinProcess_ptr_list[i]->arrivalTime;
@@ -496,7 +501,7 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
                         printf("%d,FINISHED,pid=%d,proc_remaining=%d\n",
                                globalTimer,
                                cpuMinProcess_ptr_list[i]->pid,
-                               --procCounter);
+                               procCounter);
 
                         // collect statistic data
                         int deltaTime = globalTimer - cpuMinProcess_ptr_list[i]->arrivalTime;

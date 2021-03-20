@@ -214,3 +214,44 @@ input_node_ptr SortInputListByPid(input_node_ptr L)
     free(temp);
     return L;
 }
+
+input_node_ptr SortInputListByArrival(input_node_ptr L) {
+    input_node_ptr p,q,small;
+    input_node_ptr temp = (input_node_ptr) calloc(1, sizeof (input_node_ptr));
+
+    for(p = L->next; p->next != NULL; p = p->next)
+    {
+        small = p;
+        for(q = p->next; q; q = q->next)
+        {
+            if(q->time_arrived < small->time_arrived)
+            {
+                small = q;
+            }
+        }
+
+        if(small != p)
+        {
+            temp->execution_time = p->execution_time;
+            temp->parallelisable = p->parallelisable;
+            temp->time_arrived = p->time_arrived;
+            temp->process_id = p->process_id;
+            temp->numSubs = p->numSubs;
+
+            p->execution_time = small->execution_time;
+            p->parallelisable = small->parallelisable;
+            p->time_arrived = small->time_arrived;
+            p->process_id = small->process_id;
+            p->numSubs = small->numSubs;
+
+            small->execution_time = temp->execution_time;
+            small->parallelisable = temp->parallelisable;
+            small->time_arrived = temp->time_arrived;
+            small->process_id = temp->process_id;
+            small->numSubs = temp->numSubs;
+        }
+    }
+
+    free(temp);
+    return L;
+}

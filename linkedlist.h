@@ -27,5 +27,6 @@ void removeIndexByPid(input_node_ptr dummyHead, int pid);
 input_node_ptr findIndexByPid(input_node_ptr dummyHead, int pid);
 input_node_ptr SortInputListByRemain(input_node_ptr L);
 input_node_ptr SortInputListByPid(input_node_ptr L);
+input_node_ptr SortInputListByArrival(input_node_ptr L);
 
 #endif //COMP30023_2021_PROJECT_1_LINKEDLIST_H
