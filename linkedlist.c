@@ -9,7 +9,15 @@ input_node_ptr InputListInsert(input_node_ptr head, int arrivalTime, int pid, in
 
     if(head == NULL) {
         input_node_ptr dummyHead = (input_node_ptr) calloc(1, sizeof(input_node_t));
+        if(dummyHead == NULL) {
+            printf("InputListInsert malloc error");
+            exit(1);
+        }
         dummyHead->next = (input_node_ptr) calloc(1, sizeof(input_node_t));
+        if(dummyHead->next == NULL) {
+            printf("InputListInsert malloc error");
+            exit(1);
+        }
         head = dummyHead->next;
         head->next = NULL;
         head->parallelisable = isParallel;
@@ -27,6 +35,10 @@ input_node_ptr InputListInsert(input_node_ptr head, int arrivalTime, int pid, in
     }
 
     input_node_ptr newNode = (input_node_ptr) calloc(1, sizeof(input_node_t));
+    if(newNode == NULL) {
+        printf("InputListInsert malloc error");
+        exit(1);
+    }
     dummy->next = newNode;
     newNode->next = NULL;
     newNode->parallelisable = isParallel;
@@ -67,7 +79,15 @@ void UpdateInputList(input_node_ptr dummyHead) {
 input_node_ptr parallelIndexInsert(input_node_ptr head, int arrivalTime, int pid, int executionTime, int numSUbs) {
     if(head == NULL) {
         input_node_ptr dummyHead = (input_node_ptr) calloc(1, sizeof(input_node_t));
+        if(dummyHead == NULL) {
+            printf("parallelIndexInsert malloc error");
+            exit(1);
+        }
         dummyHead->next = (input_node_ptr) calloc(1, sizeof(input_node_t));
+        if(dummyHead->next == NULL) {
+            printf("parallelIndexInsert malloc error");
+            exit(1);
+        }
         head = dummyHead->next;
         head->next = NULL;
         head->parallelisable = 1;
@@ -85,16 +105,39 @@ input_node_ptr parallelIndexInsert(input_node_ptr head, int arrivalTime, int pid
     }
 
     input_node_ptr newNode = (input_node_ptr) calloc(1, sizeof(input_node_t));
+    if(newNode == NULL) {
+        printf("parallelIndexInsert malloc error");
+        exit(1);
+    }
     dummy->next = newNode;
     newNode->next = NULL;
     newNode->parallelisable = 1;
     newNode->execution_time = executionTime;
     newNode->time_arrived = arrivalTime;
     newNode->process_id = pid;
-    head->numSubs = numSUbs;
-    head->remainNumSubs = numSUbs;
+    newNode->numSubs = numSUbs;
+    newNode->remainNumSubs = numSUbs;
 
     return head;
+}
+
+input_node_ptr destroyLinkList(input_node_ptr dummyHead) {
+    if(dummyHead == NULL){
+        printf("Empty index list\n");
+    }
+
+    input_node_ptr quick_ptr = dummyHead->next;
+    input_node_ptr slow_ptr = dummyHead;
+
+    while (quick_ptr != NULL) {
+        free(slow_ptr);
+        slow_ptr = quick_ptr;
+        quick_ptr = quick_ptr->next;
+    }
+
+    free(slow_ptr);
+    dummyHead = NULL;
+    return NULL;
 }
 
 void removeIndexByPid(input_node_ptr dummyHead, int pid) {

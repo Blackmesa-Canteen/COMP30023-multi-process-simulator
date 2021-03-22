@@ -14,8 +14,8 @@
 
 void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int useOwnScheduler);
 input_node_ptr ReadFile(const char *fileName, FILE *fp);
-int RoundToInt(float f);
-float RoundToTwoDigitFloat(float f);
+int RoundToInt(double f);
+float RoundToTwoDigitFloat(double f);
 int CountLines(FILE *fp, int lineCounter);
 void
 GetArgs(int argc, char **argv, char **charPart, int argChar, int *useOwnScheduler, int *numProcessors, char **fileName);
@@ -132,8 +132,8 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
     int globalTimer = 0;
     int totalDeltaTime = 0;
     int numRunnedProcesses = 0;
-    float maxTimeOverhead = 0;
-    float totalTimeOverhead = 0;
+    double maxTimeOverhead = 0;
+    double totalTimeOverhead = 0;
 
     input_node_ptr input_process_ptr;
 
@@ -227,7 +227,7 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
                 // collect statistic data
                 int deltaTime = globalTimer - minRemainTimeProcess_ptr->arrivalTime;
                 totalDeltaTime += deltaTime;
-                float timeOverhead = (float)deltaTime / (minRemainTimeProcess_ptr->burstTime);
+                double timeOverhead = (double)deltaTime / (minRemainTimeProcess_ptr->burstTime);
                 if(timeOverhead > maxTimeOverhead) {
                     maxTimeOverhead = timeOverhead;
                 }
@@ -272,7 +272,7 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
                 // collect statistic data
                 int deltaTime = globalTimer - minRemainTimeProcess_ptr->arrivalTime;
                 totalDeltaTime += deltaTime;
-                float timeOverhead = (float)deltaTime / (minRemainTimeProcess_ptr->burstTime);
+                double timeOverhead = (double)deltaTime / (minRemainTimeProcess_ptr->burstTime);
                 if(timeOverhead > maxTimeOverhead) {
                     maxTimeOverhead = timeOverhead;
                 }
@@ -293,7 +293,8 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
         // ending, free all cpu running PQ
         DestroyPQ(pq);
 
-    } else if (numCPU >= 2) {
+    }
+    else if (numCPU >= 2) {
 
         input_list_head = SortInputListByPid(input_list_head);
         input_list_head = SortInputListByRemain(input_list_head);
@@ -425,9 +426,7 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
                             cpuMinProcess_ptr_list[smallRemainTimeCpuPQ->cpuId] = newMinRaminTimeProcess;
                         }
 
-
-
-                        // remove the running progress from input_list
+                        // remove the inserted progress from input_list
                         UpdateInputList(input_list_head);
 
                         free(input_process_ptr);
@@ -438,6 +437,7 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
                         if(input_list_head->next == NULL) {
                             break;
                         }
+                        // get new input, and back to reading loop
                         input_process_ptr = GetFromInputList(input_list_head);
                     }
                 }
@@ -461,16 +461,34 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
                         continue;
                     }
 
-                    if(cpuMinProcess_ptr_list[i]->isRunning == 0) {
-                        printf("%d,RUNNING,pid=%d,remaining_time=%d,cpu=%d\n",
-                               globalTimer,
-                               cpuMinProcess_ptr_list[i]->pid,
-                               cpuMinProcess_ptr_list[i]->remainingTime,
-                               cpuMinProcess_ptr_list[i]->cpuId);
-                        cpuMinProcess_ptr_list[i]->isRunning = 1;
+                    if(cpuMinProcess_ptr_list[i]->isParallelisable == 0) {
+                        // if N
+                        if(cpuMinProcess_ptr_list[i]->isRunning == 0) {
+                            printf("%d,RUNNING,pid=%d,remaining_time=%d,cpu=%d\n",
+                                   globalTimer,
+                                   cpuMinProcess_ptr_list[i]->pid,
+                                   cpuMinProcess_ptr_list[i]->remainingTime,
+                                   cpuMinProcess_ptr_list[i]->cpuId);
+                            cpuMinProcess_ptr_list[i]->isRunning = 1;
+                        }
+
+                        cpuMinProcess_ptr_list[i]->remainingTime -= 1;
+
+                    } else {
+                        // if P
+                        if(cpuMinProcess_ptr_list[i]->isRunning == 0) {
+                            printf("%d,RUNNING,pid=%d.%d,remaining_time=%d,cpu=%d\n",
+                                   globalTimer,
+                                   cpuMinProcess_ptr_list[i]->pid,
+                                   cpuMinProcess_ptr_list[i]->subProcNo,
+                                   cpuMinProcess_ptr_list[i]->remainingTime,
+                                   cpuMinProcess_ptr_list[i]->cpuId);
+                            cpuMinProcess_ptr_list[i]->isRunning = 1;
+                        }
+
+                        cpuMinProcess_ptr_list[i]->remainingTime -= 1;
                     }
 
-                    cpuMinProcess_ptr_list[i]->remainingTime -= 1;
                 }
             }
 
@@ -486,29 +504,66 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
                 // check the shortest one, whether it is finished
                 procCounter = CountAllProcesses(cpuPQList, numCPU);
                 if (cpuMinProcess_ptr_list[i]->remainingTime == 0) {
-                    printf("%d,FINISHED,pid=%d,proc_remaining=%d\n",
-                           globalTimer,
-                           cpuMinProcess_ptr_list[i]->pid,
-                           procCounter);
 
-                    // collect statistic data
-                    int deltaTime = globalTimer - cpuMinProcess_ptr_list[i]->arrivalTime;
-                    totalDeltaTime += deltaTime;
-                    float timeOverhead = (float)deltaTime / (cpuMinProcess_ptr_list[i]->burstTime);
-                    if(timeOverhead > maxTimeOverhead) {
-                        maxTimeOverhead = timeOverhead;
+                    // if not P
+                    if(cpuMinProcess_ptr_list[i]->isParallelisable == 0) {
+                        printf("%d,FINISHED,pid=%d,proc_remaining=%d\n",
+                               globalTimer,
+                               cpuMinProcess_ptr_list[i]->pid,
+                               procCounter);
+
+                        // collect statistic data
+                        int deltaTime = globalTimer - cpuMinProcess_ptr_list[i]->arrivalTime;
+                        totalDeltaTime += deltaTime;
+                        double timeOverhead = (double)deltaTime / (cpuMinProcess_ptr_list[i]->burstTime);
+                        if(timeOverhead > maxTimeOverhead) {
+                            maxTimeOverhead = timeOverhead;
+                        }
+                        totalTimeOverhead += timeOverhead;
+                        numRunnedProcesses++;
+
+                        // free and delete the ended progress from CPU running pq
+                        free(DeleteMinRemainTimeProcess(cpuPQList[i]));
+                        cpuMinProcess_ptr_list[i] = NULL;
+
+                        // pick one new shortest process from CPU running pq
+                        if(!IsEmptyPQ(cpuPQList[i])) {
+                            cpuMinProcess_ptr_list[i] = FindMinRemainTimeProcess(cpuPQList[i]);
+                        }
+
+                    } else {
+                        input_node_ptr mainProc = findIndexByPid(parallelProcIndexList, cpuMinProcess_ptr_list[i]->pid);
+                        if(mainProc->remainNumSubs > 1) {
+                            mainProc->remainNumSubs -= 1;
+
+                        } else {
+                            // if all sub proc are finished
+                            printf("%d,FINISHED,pid=%d,proc_remaining=%d\n",
+                                   globalTimer,
+                                   cpuMinProcess_ptr_list[i]->pid,
+                                   procCounter);
+
+                            // collect statistic data
+                            int deltaTime = globalTimer - cpuMinProcess_ptr_list[i]->arrivalTime;
+                            totalDeltaTime += deltaTime;
+                            double timeOverhead = (double)deltaTime / (cpuMinProcess_ptr_list[i]->burstTime);
+                            if(timeOverhead > maxTimeOverhead) {
+                                maxTimeOverhead = timeOverhead;
+                            }
+                            totalTimeOverhead += timeOverhead;
+                            numRunnedProcesses++;
+                        }
+
+                        // free and delete the ended progress from CPU running pq
+                        free(DeleteMinRemainTimeProcess(cpuPQList[i]));
+                        cpuMinProcess_ptr_list[i] = NULL;
+
+                        // pick one new shortest process from CPU running pq
+                        if(!IsEmptyPQ(cpuPQList[i])) {
+                            cpuMinProcess_ptr_list[i] = FindMinRemainTimeProcess(cpuPQList[i]);
+                        }
                     }
-                    totalTimeOverhead += timeOverhead;
-                    numRunnedProcesses++;
 
-                    // free and delete the ended progress from CPU running pq
-                    free(DeleteMinRemainTimeProcess(cpuPQList[i]));
-                    cpuMinProcess_ptr_list[i] = NULL;
-
-                    // pick one new shortest process from CPU running pq
-                    if(!IsEmptyPQ(cpuPQList[i])) {
-                        cpuMinProcess_ptr_list[i] = FindMinRemainTimeProcess(cpuPQList[i]);
-                    }
                 }
 
             }
@@ -527,15 +582,33 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
                 if (!IsEmptyPQ(cpuPQList[i])) {
                     // pick the shortest one to run
                     // minRemainTimeProcess_ptr = FindMinRemainTimeProcess(pq);
-                    if (cpuMinProcess_ptr_list[i]->isRunning == 0) {
-                        printf("%d,RUNNING,pid=%d,remaining_time=%d,cpu=%d\n",
-                               globalTimer,
-                               cpuMinProcess_ptr_list[i]->pid,
-                               cpuMinProcess_ptr_list[i]->remainingTime,
-                               cpuMinProcess_ptr_list[i]->cpuId);
-                        cpuMinProcess_ptr_list[i]->isRunning = 1;
+                    if(cpuMinProcess_ptr_list[i]->isParallelisable == 0) {
+                        // if N
+                        if(cpuMinProcess_ptr_list[i]->isRunning == 0) {
+                            printf("%d,RUNNING,pid=%d,remaining_time=%d,cpu=%d\n",
+                                   globalTimer,
+                                   cpuMinProcess_ptr_list[i]->pid,
+                                   cpuMinProcess_ptr_list[i]->remainingTime,
+                                   cpuMinProcess_ptr_list[i]->cpuId);
+                            cpuMinProcess_ptr_list[i]->isRunning = 1;
+                        }
+
+                        cpuMinProcess_ptr_list[i]->remainingTime -= 1;
+
+                    } else {
+                        // if P
+                        if(cpuMinProcess_ptr_list[i]->isRunning == 0) {
+                            printf("%d,RUNNING,pid=%d.%d,remaining_time=%d,cpu=%d\n",
+                                   globalTimer,
+                                   cpuMinProcess_ptr_list[i]->pid,
+                                   cpuMinProcess_ptr_list[i]->subProcNo,
+                                   cpuMinProcess_ptr_list[i]->remainingTime,
+                                   cpuMinProcess_ptr_list[i]->cpuId);
+                            cpuMinProcess_ptr_list[i]->isRunning = 1;
+                        }
+
+                        cpuMinProcess_ptr_list[i]->remainingTime -= 1;
                     }
-                    cpuMinProcess_ptr_list[i]->remainingTime -= 1;
                 }
             }
 
@@ -547,29 +620,63 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
                     // check the shortest one, whether it is finished
                     procCounter = CountAllProcesses(cpuPQList, numCPU);
                     if (cpuMinProcess_ptr_list[i]->remainingTime == 0) {
-                        printf("%d,FINISHED,pid=%d,proc_remaining=%d\n",
-                               globalTimer,
-                               cpuMinProcess_ptr_list[i]->pid,
-                               procCounter);
+                        // if not P
+                        if(cpuMinProcess_ptr_list[i]->isParallelisable == 0) {
+                            printf("%d,FINISHED,pid=%d,proc_remaining=%d\n",
+                                   globalTimer,
+                                   cpuMinProcess_ptr_list[i]->pid,
+                                   procCounter);
 
-                        // collect statistic data
-                        int deltaTime = globalTimer - cpuMinProcess_ptr_list[i]->arrivalTime;
-                        totalDeltaTime += deltaTime;
-                        float timeOverhead = (float)deltaTime / (cpuMinProcess_ptr_list[i]->burstTime);
-                        if(timeOverhead > maxTimeOverhead) {
-                            maxTimeOverhead = timeOverhead;
-                        }
-                        totalTimeOverhead += timeOverhead;
-                        numRunnedProcesses++;
+                            // collect statistic data
+                            int deltaTime = globalTimer - cpuMinProcess_ptr_list[i]->arrivalTime;
+                            totalDeltaTime += deltaTime;
+                            double timeOverhead = (double)deltaTime / (cpuMinProcess_ptr_list[i]->burstTime);
+                            if(timeOverhead > maxTimeOverhead) {
+                                maxTimeOverhead = timeOverhead;
+                            }
+                            totalTimeOverhead += timeOverhead;
+                            numRunnedProcesses++;
 
-                        // free and delete the ended progress
-                        // free and delete the ended progress from CPU running pq
-                        free(DeleteMinRemainTimeProcess(cpuPQList[i]));
-                        cpuMinProcess_ptr_list[i] = NULL;
+                            // free and delete the ended progress from CPU running pq
+                            free(DeleteMinRemainTimeProcess(cpuPQList[i]));
+                            cpuMinProcess_ptr_list[i] = NULL;
 
-                        // pick one new shortest process from running pq
-                        if(!IsEmptyPQ(cpuPQList[i])) {
-                            cpuMinProcess_ptr_list[i] = FindMinRemainTimeProcess(cpuPQList[i]);
+                            // pick one new shortest process from CPU running pq
+                            if(!IsEmptyPQ(cpuPQList[i])) {
+                                cpuMinProcess_ptr_list[i] = FindMinRemainTimeProcess(cpuPQList[i]);
+                            }
+
+                        } else {
+                            input_node_ptr mainProc = findIndexByPid(parallelProcIndexList, cpuMinProcess_ptr_list[i]->pid);
+                            if(mainProc->remainNumSubs > 1) {
+                                mainProc->remainNumSubs -= 1;
+
+                            } else {
+                                // if all sub proc are finished
+                                printf("%d,FINISHED,pid=%d,proc_remaining=%d\n",
+                                       globalTimer,
+                                       cpuMinProcess_ptr_list[i]->pid,
+                                       procCounter);
+
+                                // collect statistic data
+                                int deltaTime = globalTimer - cpuMinProcess_ptr_list[i]->arrivalTime;
+                                totalDeltaTime += deltaTime;
+                                double timeOverhead = (double)deltaTime / (cpuMinProcess_ptr_list[i]->burstTime);
+                                if(timeOverhead > maxTimeOverhead) {
+                                    maxTimeOverhead = timeOverhead;
+                                }
+                                totalTimeOverhead += timeOverhead;
+                                numRunnedProcesses++;
+                            }
+
+                            // free and delete the ended progress from CPU running pq
+                            free(DeleteMinRemainTimeProcess(cpuPQList[i]));
+                            cpuMinProcess_ptr_list[i] = NULL;
+
+                            // pick one new shortest process from CPU running pq
+                            if(!IsEmptyPQ(cpuPQList[i])) {
+                                cpuMinProcess_ptr_list[i] = FindMinRemainTimeProcess(cpuPQList[i]);
+                            }
                         }
                     }
                 }
@@ -584,14 +691,15 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
         }
         free(cpuPQList);
         free(cpuMinProcess_ptr_list);
+        parallelProcIndexList = destroyLinkList(parallelProcIndexList);
     }
 
-    printf("Turnaround time %d\n", RoundToInt((float)totalDeltaTime / numRunnedProcesses));
+    printf("Turnaround time %d\n", RoundToInt((double)totalDeltaTime / numRunnedProcesses));
     printf("Time overhead %g %g\n", RoundToTwoDigitFloat(maxTimeOverhead), RoundToTwoDigitFloat(totalTimeOverhead / numRunnedProcesses));
     printf("Makespan %d\n", globalTimer);
 }
 
-int RoundToInt(float f)
+int RoundToInt(double f)
 {
     int dint=(int) f;
 
@@ -605,7 +713,7 @@ int RoundToInt(float f)
     }
 }
 
-float RoundToTwoDigitFloat(float f) {
+float RoundToTwoDigitFloat(double f) {
     return ((int)(f * 100 + 0.5)/ 100.0);
     // return f;
 }

@@ -5,12 +5,16 @@
 #include <stdlib.h>
 #include "process.h"
 
-#define MIN_INT -32767
+#define MIN_INT (-32767)
 
 
 process_t* createProcess(int pid, int arrivalTime, int executionTime, int isParallelisable, int cpuId, int subProcNo) {
 
     process_t* newProcess = (process_t*) calloc(1, sizeof (process_t));
+    if(newProcess == NULL) {
+        printf("createProcess malloc error");
+        exit(1);
+    }
     newProcess->pid = pid;
     newProcess->arrivalTime = arrivalTime;
     newProcess->burstTime = executionTime;

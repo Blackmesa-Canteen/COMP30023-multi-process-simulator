@@ -21,6 +21,7 @@ typedef input_node_t* input_node_ptr;
 
 input_node_ptr InputListInsert(input_node_ptr head, int arrivalTime, int pid, int executionTime, int isParallel);
 input_node_ptr parallelIndexInsert(input_node_ptr head, int arrivalTime, int pid, int executionTime, int numSUbs);
+input_node_ptr destroyLinkList(input_node_ptr dummyHead);
 input_node_ptr GetFromInputList(input_node_ptr dummyHead);
 void UpdateInputList(input_node_ptr dummyHead);
 
