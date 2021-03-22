@@ -12,6 +12,7 @@ typedef struct node {
     int execution_time;
     int parallelisable;
     int numSubs;
+    int remainNumSubs;
 
     struct node* next;
 } input_node_t;

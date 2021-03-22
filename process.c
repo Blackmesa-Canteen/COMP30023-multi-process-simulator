@@ -8,7 +8,7 @@
 #define MIN_INT -32767
 
 
-process_t* createProcess(int pid, int arrivalTime, int executionTime, int isParallelisable, int cpuId) {
+process_t* createProcess(int pid, int arrivalTime, int executionTime, int isParallelisable, int cpuId, int subProcNo) {
 
     process_t* newProcess = (process_t*) calloc(1, sizeof (process_t));
     newProcess->pid = pid;
@@ -21,6 +21,7 @@ process_t* createProcess(int pid, int arrivalTime, int executionTime, int isPara
     newProcess->isRunning = 0;
     newProcess->isParallelisable = isParallelisable;
     newProcess->cpuId = cpuId;
+    newProcess->subProcNo = subProcNo;
 
     return newProcess;
 }

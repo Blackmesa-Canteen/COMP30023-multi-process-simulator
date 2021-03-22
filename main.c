@@ -7,6 +7,7 @@
 #include <ctype.h>
 #include <unistd.h>
 #include <string.h>
+#include <math.h>
 
 #define MAXLENGTH 513
 #define MAX_INT 2147483647
@@ -49,13 +50,6 @@ int main(int argc, char** argv) {
 
     /* run simulation */
     SimRun(input_list_head, lineCounter, numProcessors, useOwnScheduler);
-
-//    process_t* process1 = createProcess(1, 1, 2, 0);
-
-//    InsertPQ(process1, pq);
-//    printf("%d\n", (DeleteMinRemainTimeProcess(pq))->remainingTime);
-//    DestroyPQ(pq);
-//    free(process1);
 
     return 0;
 }
@@ -169,7 +163,7 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
                                        input_process_ptr->time_arrived,
                                        input_process_ptr->execution_time,
                                        input_process_ptr->parallelisable,
-                                       0)
+                                       0, 0)
                          , pq);
 
 
@@ -345,7 +339,7 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
                                            input_process_ptr->time_arrived,
                                            input_process_ptr->execution_time,
                                            input_process_ptr->parallelisable,
-                                           smallRemainTimeCpuPQ->cpuId),
+                                           smallRemainTimeCpuPQ->cpuId, 0),
                              smallRemainTimeCpuPQ);
 
                     // remove the running progress from input_list
@@ -373,23 +367,78 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
                     input_process_ptr = GetFromInputList(input_list_head);
 
                 }
-                    // if the process is parallel, and has NOT been added into indexList
+                    // if the process is parallel
                 else if(input_process_ptr->parallelisable == 1) {
+
+                    // if proc has NOT been added into indexList, add it
                     if(parallelProcIndexList == NULL ||
                        findIndexByPid(parallelProcIndexList, input_process_ptr->process_id) == NULL) {
                         // decide num subProcesses
                         int k = 1;
-                        for(k = 1; k <= numCPU; k++) {
-                            if((input_process_ptr->execution_time / (float)k) < 1) {
+
+                        for(k = 1; k < numCPU; k++) {
+                            if(((double)input_process_ptr->execution_time / k) < 1) {
                                 k = k - 1;
                                 break;
                             }
                         }
+                        // when k == numCPU
+                        if(((double)input_process_ptr->execution_time / k) < 1) {
+                            k = k - 1;
+                        }
 
-                        parallelIndexInsert(parallelProcIndexList,
+                        // insert proc to para index list
+                        parallelProcIndexList = parallelIndexInsert(parallelProcIndexList,
                                             input_process_ptr->time_arrived,
                                             input_process_ptr->process_id,
                                             input_process_ptr->execution_time, k);
+
+                        // assign sub proc to different CPU PQ
+                        for(int subProcNo = 0; subProcNo < k; subProcNo++) {
+
+                            // pick one cpu to add sub processes
+                            PQ_t smallRemainTimeCpuPQ = cpuPQList[0];
+                            int i = 0;
+                            for(i = 0; i < numCPU; i++) {
+                                if(CountTotalRemainingTime(smallRemainTimeCpuPQ) > CountTotalRemainingTime(cpuPQList[i])) {
+                                    smallRemainTimeCpuPQ = cpuPQList[i];
+                                }
+                            }
+
+                            InsertPQ(createProcess(input_process_ptr->process_id,
+                                                   input_process_ptr->time_arrived,
+                                                   (int)(ceil((double)(input_process_ptr->execution_time)/k) + 1),
+                                                   input_process_ptr->parallelisable,
+                                                   smallRemainTimeCpuPQ->cpuId, subProcNo),
+                                     smallRemainTimeCpuPQ);
+
+                            // check the PQ for proc with min remain time after insert new process
+                            process_t* newMinRaminTimeProcess = FindMinRemainTimeProcess(smallRemainTimeCpuPQ);
+
+                            // if there is a prev minRemainTime is in PQ, and new min process is not the prev one, prev should pause
+                            // This is the only place that can make running proc pause in CPU PQ
+                            if(cpuMinProcess_ptr_list[smallRemainTimeCpuPQ->cpuId] != NULL &&
+                               cpuMinProcess_ptr_list[smallRemainTimeCpuPQ->cpuId]->pid != newMinRaminTimeProcess->pid) {
+                                cpuMinProcess_ptr_list[smallRemainTimeCpuPQ->cpuId]->isRunning = 0;
+                            }
+                            // pick the shortest one that will run in CPU running PQ.
+                            cpuMinProcess_ptr_list[smallRemainTimeCpuPQ->cpuId] = newMinRaminTimeProcess;
+                        }
+
+
+
+                        // remove the running progress from input_list
+                        UpdateInputList(input_list_head);
+
+                        free(input_process_ptr);
+
+                        // Handling  the same time:
+                        // pick the next one in the input_list, in case of the same time input
+                        // if the input_list is empty, skip this loop
+                        if(input_list_head->next == NULL) {
+                            break;
+                        }
+                        input_process_ptr = GetFromInputList(input_list_head);
                     }
                 }
             }

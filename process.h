@@ -16,6 +16,7 @@ struct Process{
     int isRunning;
     int isParallelisable;
     int cpuId;
+    int subProcNo;
 };
 
 typedef struct Process process_t;
@@ -29,7 +30,7 @@ struct Heap {
 };
 typedef struct Heap* PQ_t;
 
-process_t* createProcess(int pid, int arrivalTime, int executionTime, int isParallelisable, int cpuId);
+process_t* createProcess(int pid, int arrivalTime, int executionTime, int isParallelisable, int cpuId, int subProcNo);
 PQ_t InitializePQ(int numElements, int cpuId);
 void DestroyPQ(PQ_t head);
 void DropPQ(PQ_t head);
