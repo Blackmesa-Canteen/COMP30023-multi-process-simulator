@@ -7,10 +7,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-
-#include <stdio.h>
-
-
 #include "hashtable.h"
 
 int ht_setup(HashTable* table,

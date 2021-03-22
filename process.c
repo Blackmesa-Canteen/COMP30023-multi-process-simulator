@@ -8,7 +8,7 @@
 
 #define MIN_INT (-32767)
 
-
+/* process struct is used to form up a priority queue to simulate a cpu's process stack */
 process_t* createProcess(int pid, int arrivalTime, int executionTime, int isParallelisable, int cpuId, int subProcNo) {
 
     process_t* newProcess = (process_t*) calloc(1, sizeof (process_t));
@@ -31,6 +31,7 @@ process_t* createProcess(int pid, int arrivalTime, int executionTime, int isPara
     return newProcess;
 }
 
+/* init a priority queue to simulate a cpu's process stack */
 PQ_t InitializePQ(int numElements, int cpuId) {
     if(numElements == 0) {
         printf("Error in numElements in Initialize method");
@@ -61,6 +62,7 @@ PQ_t InitializePQ(int numElements, int cpuId) {
     return head;
 }
 
+/* add a process to the priority queue */
 void InsertPQ(process_t* newProcess, PQ_t head) {
     int i = 0;
     if(IsFullPQ(head)) {
@@ -77,6 +79,7 @@ void InsertPQ(process_t* newProcess, PQ_t head) {
     head->size++;
 }
 
+/* pop up the process that has the shortest remaining time from the priority queue */
 process_t* DeleteMinRemainTimeProcess(PQ_t head) {
     int child = 0, i = 0;
     process_t* minRemainTimeProcess;
@@ -157,6 +160,8 @@ void DropPQ(PQ_t head) {
     head->size = 0;
 }
 
+
+/* find the remaining time one from pq */
 process_t* FindMinRemainTimeProcess(PQ_t head) {
     if(!IsEmptyPQ(head)) {
         return head->processes[1];
@@ -173,6 +178,7 @@ int IsFullPQ(PQ_t head) {
     return head->capacity == head->size;
 }
 
+/* count the cpu core pq's all process remaining time */
 int CountTotalRemainingTime(PQ_t head) {
     if(IsEmptyPQ(head)) {
         return 0;

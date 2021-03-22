@@ -13,7 +13,6 @@ typedef struct node {
     int parallelisable;
     int numSubs;
     int remainNumSubs;
-    int isCounted;
 
     struct node* next;
 } input_node_t;

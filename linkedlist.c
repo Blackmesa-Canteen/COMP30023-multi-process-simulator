@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+/* linked list is used to store input items from the file , can be easily sorted */
 input_node_ptr InputListInsert(input_node_ptr head, int arrivalTime, int pid, int executionTime, int isParallel){
 
     if(head == NULL) {
@@ -26,7 +27,6 @@ input_node_ptr InputListInsert(input_node_ptr head, int arrivalTime, int pid, in
         head->process_id = pid;
         head->remainNumSubs = 0;
         head->numSubs = 0;
-        head->isCounted = 0;
         return dummyHead;
     }
 
@@ -48,12 +48,12 @@ input_node_ptr InputListInsert(input_node_ptr head, int arrivalTime, int pid, in
     newNode->process_id = pid;
     newNode->remainNumSubs = 0;
     newNode->numSubs = 0;
-    newNode->isCounted = 0;
 
     return head;
 }
-///0->1->2->3->4->5->null
+//0->1->2->3->4->5->null
 
+/* pop a top node from the list with out delete it from the list */
 input_node_ptr GetFromInputList(input_node_ptr dummyHead) {
 
     if(dummyHead == NULL || dummyHead->next == NULL){
@@ -67,6 +67,7 @@ input_node_ptr GetFromInputList(input_node_ptr dummyHead) {
     return temp;
 }
 
+/* remove a top node from the list*/
 void UpdateInputList(input_node_ptr dummyHead) {
 
     if(dummyHead == NULL || dummyHead->next == NULL){
@@ -78,6 +79,9 @@ void UpdateInputList(input_node_ptr dummyHead) {
     dummyHead->next = temp->next;
 }
 
+/* add a proc node into a list as the parallel main proc index */
+/** Deprecated */
+/** See hashtable */
 input_node_ptr parallelIndexInsert(input_node_ptr head, int arrivalTime, int pid, int executionTime, int numSUbs) {
     if(head == NULL) {
         input_node_ptr dummyHead = (input_node_ptr) calloc(1, sizeof(input_node_t));
@@ -98,7 +102,6 @@ input_node_ptr parallelIndexInsert(input_node_ptr head, int arrivalTime, int pid
         head->process_id = pid;
         head->numSubs = numSUbs;
         head->remainNumSubs = numSUbs;
-        head->isCounted = 0;
         return dummyHead;
     }
 
@@ -120,11 +123,11 @@ input_node_ptr parallelIndexInsert(input_node_ptr head, int arrivalTime, int pid
     newNode->process_id = pid;
     newNode->numSubs = numSUbs;
     newNode->remainNumSubs = numSUbs;
-    newNode->isCounted = 0;
 
     return head;
 }
 
+/** Deprecated */
 input_node_ptr destroyLinkList(input_node_ptr dummyHead) {
     if(dummyHead == NULL){
         return NULL;
@@ -144,6 +147,7 @@ input_node_ptr destroyLinkList(input_node_ptr dummyHead) {
     return NULL;
 }
 
+/** Deprecated */
 void removeIndexByPid(input_node_ptr dummyHead, int pid) {
     if(dummyHead == NULL || dummyHead->next == NULL){
         printf("Empty index list\n");
@@ -167,6 +171,7 @@ void removeIndexByPid(input_node_ptr dummyHead, int pid) {
     free(ptr);
 }
 
+/** Deprecated */
 input_node_ptr findIndexByPid(input_node_ptr dummyHead, int pid) {
     if(dummyHead == NULL || dummyHead->next == NULL){
         printf("Empty index list\n");
@@ -186,13 +191,10 @@ input_node_ptr findIndexByPid(input_node_ptr dummyHead, int pid) {
     return ptr;
 }
 
+/* sort input linked list by remaining running time */
 input_node_ptr SortInputListByRemain(input_node_ptr L)
 {
     input_node_ptr p,q,small;
-//    input_node_ptr temp = (input_node_ptr) calloc(1, sizeof (input_node_ptr));
-//    if(temp == NULL) {
-//        exit(1);
-//    }
 
     // use these to handle memory read/write bug
     int time_arrived = 0;
@@ -201,7 +203,6 @@ input_node_ptr SortInputListByRemain(input_node_ptr L)
     int parallelisable = 0;
     int numSubs = 0;
     int remainNumSubs = 0;
-    int isCounted = 0;
 
     for(p = L->next; p->next != NULL; p = p->next)
     {
@@ -222,7 +223,6 @@ input_node_ptr SortInputListByRemain(input_node_ptr L)
             process_id = p->process_id;
             numSubs = p->numSubs;
             remainNumSubs = p->remainNumSubs;
-            isCounted = p->isCounted;
 
             p->execution_time = small->execution_time;
             p->parallelisable = small->parallelisable;
@@ -230,7 +230,6 @@ input_node_ptr SortInputListByRemain(input_node_ptr L)
             p->process_id = small->process_id;
             p->numSubs = small->numSubs;
             p->remainNumSubs = small->remainNumSubs;
-            p->isCounted = small->isCounted;
 
             small->execution_time = execution_time;
             small->parallelisable = parallelisable;
@@ -238,7 +237,6 @@ input_node_ptr SortInputListByRemain(input_node_ptr L)
             small->process_id = process_id;
             small->numSubs = numSubs;
             small->remainNumSubs = remainNumSubs;
-            small->isCounted = isCounted;
         }
     }
 
@@ -246,13 +244,10 @@ input_node_ptr SortInputListByRemain(input_node_ptr L)
     return L;
 }
 
+/* sort input linked list by pid */
 input_node_ptr SortInputListByPid(input_node_ptr L)
 {
     input_node_ptr p,q,small;
-//    input_node_ptr temp = (input_node_ptr) calloc(1, sizeof (input_node_ptr));
-//    if(temp == NULL) {
-//        exit(1);
-//    }
 
     // use these to handle memory read/write bug
     int time_arrived = 0;
@@ -261,7 +256,6 @@ input_node_ptr SortInputListByPid(input_node_ptr L)
     int parallelisable = 0;
     int numSubs = 0;
     int remainNumSubs = 0;
-    int isCounted = 0;
 
     for(p = L->next; p->next != NULL; p = p->next)
     {
@@ -293,7 +287,6 @@ input_node_ptr SortInputListByPid(input_node_ptr L)
             process_id = p->process_id;
             numSubs = p->numSubs;
             remainNumSubs = p->remainNumSubs;
-            isCounted = p->isCounted;
 
             p->execution_time = small->execution_time;
             p->parallelisable = small->parallelisable;
@@ -301,18 +294,6 @@ input_node_ptr SortInputListByPid(input_node_ptr L)
             p->process_id = small->process_id;
             p->numSubs = small->numSubs;
             p->remainNumSubs = small->remainNumSubs;
-            p->isCounted = small->isCounted;
-
-//            small->execution_time = temp->execution_time;
-//            //leak
-//            small->parallelisable = temp->parallelisable;
-//            small->time_arrived = temp->time_arrived;
-//            //leak
-//            small->process_id = temp->process_id;
-//            // Leak
-//            small->numSubs = temp->numSubs;
-//            // Leak
-//            small->remainNumSubs = temp->remainNumSubs;
 
             small->execution_time = execution_time;
             small->parallelisable = parallelisable;
@@ -320,20 +301,15 @@ input_node_ptr SortInputListByPid(input_node_ptr L)
             small->process_id = process_id;
             small->numSubs = numSubs;
             small->remainNumSubs = remainNumSubs;
-            small->isCounted = isCounted;
         }
     }
 
-    //free(temp);
     return L;
 }
 
+/* sort input linked list by arrival time */
 input_node_ptr SortInputListByArrival(input_node_ptr L) {
     input_node_ptr p,q,small;
-//    input_node_ptr temp = (input_node_ptr) calloc(1, sizeof (input_node_ptr));
-//    if(temp == NULL) {
-//        exit(1);
-//    }
 
     // use these to handle memory write error
     int time_arrived = 0;
@@ -363,7 +339,6 @@ input_node_ptr SortInputListByArrival(input_node_ptr L) {
             process_id = p->process_id;
             numSubs = p->numSubs;
             remainNumSubs = p->remainNumSubs;
-            isCounted = p->isCounted;
 
             p->execution_time = small->execution_time;
             p->parallelisable = small->parallelisable;
@@ -371,7 +346,6 @@ input_node_ptr SortInputListByArrival(input_node_ptr L) {
             p->process_id = small->process_id;
             p->numSubs = small->numSubs;
             p->remainNumSubs = small->remainNumSubs;
-            p->isCounted = small->isCounted;
 
             small->execution_time = execution_time;
             small->parallelisable = parallelisable;
@@ -379,10 +353,8 @@ input_node_ptr SortInputListByArrival(input_node_ptr L) {
             small->process_id = process_id;
             small->numSubs = numSubs;
             small->remainNumSubs = remainNumSubs;
-            small->isCounted = isCounted;
         }
     }
 
-    //free(temp);
     return L;
 }
