@@ -3,6 +3,7 @@
 #include "process.h"
 #include "readFile.h"
 #include "linkedlist.h"
+#include "hashtable.h"
 
 #include <ctype.h>
 #include <unistd.h>
@@ -10,7 +11,6 @@
 #include <math.h>
 
 #define MAXLENGTH 513
-#define MAX_INT 2147483647
 
 void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int useOwnScheduler);
 input_node_ptr ReadFile(const char *fileName, FILE *fp);
@@ -546,7 +546,11 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
                             // collect statistic data
                             int deltaTime = globalTimer - cpuMinProcess_ptr_list[i]->arrivalTime;
                             totalDeltaTime += deltaTime;
-                            double timeOverhead = (double)deltaTime / (cpuMinProcess_ptr_list[i]->burstTime);
+
+                            // we need to use parallel's execution time here
+                            int execTime = findIndexByPid(parallelProcIndexList, cpuMinProcess_ptr_list[i]->pid)->execution_time;
+                            double timeOverhead = (double)deltaTime / execTime;
+
                             if(timeOverhead > maxTimeOverhead) {
                                 maxTimeOverhead = timeOverhead;
                             }
@@ -661,7 +665,11 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
                                 // collect statistic data
                                 int deltaTime = globalTimer - cpuMinProcess_ptr_list[i]->arrivalTime;
                                 totalDeltaTime += deltaTime;
-                                double timeOverhead = (double)deltaTime / (cpuMinProcess_ptr_list[i]->burstTime);
+
+                                // we need to use parallel's execution time here
+                                int execTime = findIndexByPid(parallelProcIndexList, cpuMinProcess_ptr_list[i]->pid)->execution_time;
+                                double timeOverhead = (double)deltaTime / execTime;
+
                                 if(timeOverhead > maxTimeOverhead) {
                                     maxTimeOverhead = timeOverhead;
                                 }
@@ -701,16 +709,9 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
 
 int RoundToInt(double f)
 {
-    int dint=(int) f;
+    int dint=(int) ceil(f);
 
-    if(f >= dint + 0.5)
-    {
-        return dint+1;
-    }
-    else
-    {
-        return dint;
-    }
+    return dint;
 }
 
 float RoundToTwoDigitFloat(double f) {

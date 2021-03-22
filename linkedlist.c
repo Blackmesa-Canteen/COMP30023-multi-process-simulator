@@ -26,6 +26,7 @@ input_node_ptr InputListInsert(input_node_ptr head, int arrivalTime, int pid, in
         head->process_id = pid;
         head->remainNumSubs = 0;
         head->numSubs = 0;
+        head->isCounted = 0;
         return dummyHead;
     }
 
@@ -47,6 +48,7 @@ input_node_ptr InputListInsert(input_node_ptr head, int arrivalTime, int pid, in
     newNode->process_id = pid;
     newNode->remainNumSubs = 0;
     newNode->numSubs = 0;
+    newNode->isCounted = 0;
 
     return head;
 }
@@ -96,6 +98,7 @@ input_node_ptr parallelIndexInsert(input_node_ptr head, int arrivalTime, int pid
         head->process_id = pid;
         head->numSubs = numSUbs;
         head->remainNumSubs = numSUbs;
+        head->isCounted = 0;
         return dummyHead;
     }
 
@@ -117,13 +120,14 @@ input_node_ptr parallelIndexInsert(input_node_ptr head, int arrivalTime, int pid
     newNode->process_id = pid;
     newNode->numSubs = numSUbs;
     newNode->remainNumSubs = numSUbs;
+    newNode->isCounted = 0;
 
     return head;
 }
 
 input_node_ptr destroyLinkList(input_node_ptr dummyHead) {
     if(dummyHead == NULL){
-        printf("Empty index list\n");
+        return NULL;
     }
 
     input_node_ptr quick_ptr = dummyHead->next;
@@ -197,6 +201,7 @@ input_node_ptr SortInputListByRemain(input_node_ptr L)
     int parallelisable = 0;
     int numSubs = 0;
     int remainNumSubs = 0;
+    int isCounted = 0;
 
     for(p = L->next; p->next != NULL; p = p->next)
     {
@@ -217,6 +222,7 @@ input_node_ptr SortInputListByRemain(input_node_ptr L)
             process_id = p->process_id;
             numSubs = p->numSubs;
             remainNumSubs = p->remainNumSubs;
+            isCounted = p->isCounted;
 
             p->execution_time = small->execution_time;
             p->parallelisable = small->parallelisable;
@@ -224,6 +230,7 @@ input_node_ptr SortInputListByRemain(input_node_ptr L)
             p->process_id = small->process_id;
             p->numSubs = small->numSubs;
             p->remainNumSubs = small->remainNumSubs;
+            p->isCounted = small->isCounted;
 
             small->execution_time = execution_time;
             small->parallelisable = parallelisable;
@@ -231,6 +238,7 @@ input_node_ptr SortInputListByRemain(input_node_ptr L)
             small->process_id = process_id;
             small->numSubs = numSubs;
             small->remainNumSubs = remainNumSubs;
+            small->isCounted = isCounted;
         }
     }
 
@@ -253,6 +261,7 @@ input_node_ptr SortInputListByPid(input_node_ptr L)
     int parallelisable = 0;
     int numSubs = 0;
     int remainNumSubs = 0;
+    int isCounted = 0;
 
     for(p = L->next; p->next != NULL; p = p->next)
     {
@@ -284,6 +293,7 @@ input_node_ptr SortInputListByPid(input_node_ptr L)
             process_id = p->process_id;
             numSubs = p->numSubs;
             remainNumSubs = p->remainNumSubs;
+            isCounted = p->isCounted;
 
             p->execution_time = small->execution_time;
             p->parallelisable = small->parallelisable;
@@ -291,6 +301,7 @@ input_node_ptr SortInputListByPid(input_node_ptr L)
             p->process_id = small->process_id;
             p->numSubs = small->numSubs;
             p->remainNumSubs = small->remainNumSubs;
+            p->isCounted = small->isCounted;
 
 //            small->execution_time = temp->execution_time;
 //            //leak
@@ -309,6 +320,7 @@ input_node_ptr SortInputListByPid(input_node_ptr L)
             small->process_id = process_id;
             small->numSubs = numSubs;
             small->remainNumSubs = remainNumSubs;
+            small->isCounted = isCounted;
         }
     }
 
@@ -330,6 +342,7 @@ input_node_ptr SortInputListByArrival(input_node_ptr L) {
     int parallelisable = 0;
     int numSubs = 0;
     int remainNumSubs = 0;
+    int isCounted = 0;
 
     for(p = L->next; p->next != NULL; p = p->next)
     {
@@ -350,6 +363,7 @@ input_node_ptr SortInputListByArrival(input_node_ptr L) {
             process_id = p->process_id;
             numSubs = p->numSubs;
             remainNumSubs = p->remainNumSubs;
+            isCounted = p->isCounted;
 
             p->execution_time = small->execution_time;
             p->parallelisable = small->parallelisable;
@@ -357,6 +371,7 @@ input_node_ptr SortInputListByArrival(input_node_ptr L) {
             p->process_id = small->process_id;
             p->numSubs = small->numSubs;
             p->remainNumSubs = small->remainNumSubs;
+            p->isCounted = small->isCounted;
 
             small->execution_time = execution_time;
             small->parallelisable = parallelisable;
@@ -364,6 +379,7 @@ input_node_ptr SortInputListByArrival(input_node_ptr L) {
             small->process_id = process_id;
             small->numSubs = numSubs;
             small->remainNumSubs = remainNumSubs;
+            small->isCounted = isCounted;
         }
     }
 
