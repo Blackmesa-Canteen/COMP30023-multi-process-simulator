@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "process.h"
+#include "hashtable.h"
 
 #define MIN_INT (-32767)
 
@@ -187,6 +188,9 @@ int CountTotalRemainingTime(PQ_t head) {
 }
 
 int CountAllProcesses(PQ_t* cpuPQList, int numCPU) {
+    HashTable countTable;
+    ht_setup(&countTable, sizeof (int), sizeof (int), 512);
+    ht_reserve(&countTable, 512);
     int res = 0;
 
     for(int i = 0; i < numCPU; i++) {
@@ -197,11 +201,22 @@ int CountAllProcesses(PQ_t* cpuPQList, int numCPU) {
 
         for(int j = 1; j <= cpuPQList[i]->size; j++) {
             if(cpuPQList[i]->processes[j]->remainingTime != 0) {
-                res++;
+                if(cpuPQList[i]->processes[j]->isParallelisable == 0) {
+                    res++;
+                } else {
+                    if(!ht_contains(&countTable, &(cpuPQList[i]->processes[j]->pid))) {
+                        res++;
+                        ht_insert(&countTable, &(cpuPQList[i]->processes[j]->pid), &res);
+                    }
+                }
+
             }
         }
-    }
 
+
+    }
+    ht_clear(&countTable);
+    ht_destroy(&countTable);
     return res;
 }
 

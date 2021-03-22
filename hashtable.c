@@ -1,4 +1,5 @@
 /**
+ * Author: http://www.goldsborough.me/
  * Original source: https://github.com/goldsborough/hashtable
 */
 
