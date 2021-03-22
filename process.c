@@ -6,10 +6,10 @@
 #include "process.h"
 #include "hashtable.h"
 
-#define MIN_INT (-32767)
+#define MIN_INT 0
 
 /* process struct is used to form up a priority queue to simulate a cpu's process stack */
-process_t* createProcess(int pid, int arrivalTime, int executionTime, int isParallelisable, int cpuId, int subProcNo) {
+process_t* createProcess(unsigned int pid, unsigned int arrivalTime, unsigned int executionTime, int isParallelisable, int cpuId, int subProcNo) {
 
     process_t* newProcess = (process_t*) calloc(1, sizeof (process_t));
     if(newProcess == NULL) {
@@ -179,12 +179,12 @@ int IsFullPQ(PQ_t head) {
 }
 
 /* count the cpu core pq's all process remaining time */
-int CountTotalRemainingTime(PQ_t head) {
+unsigned int CountTotalRemainingTime(PQ_t head) {
     if(IsEmptyPQ(head)) {
         return 0;
     }
 
-    int totalRemainingTime = 0;
+    unsigned int totalRemainingTime = 0;
 
     for(int i = 1; i <= head->size; i++) {
         totalRemainingTime += head->processes[i]->remainingTime;
@@ -195,8 +195,8 @@ int CountTotalRemainingTime(PQ_t head) {
 
 int CountAllProcesses(PQ_t* cpuPQList, int numCPU) {
     HashTable countTable;
-    ht_setup(&countTable, sizeof (int), sizeof (int), 512);
-    ht_reserve(&countTable, 512);
+    ht_setup(&countTable, sizeof (unsigned int), sizeof (int), 512);
+    ht_reserve(&countTable, 512 * 2);
     int res = 0;
 
     for(int i = 0; i < numCPU; i++) {

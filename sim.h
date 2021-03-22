@@ -7,8 +7,8 @@
 
 void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int useOwnScheduler);
 input_node_ptr ReadFile(const char *fileName, FILE *fp);
-int RoundToInt(double f);
-float RoundToTwoDigitFloat(double f);
+unsigned int RoundToInt(double f);
+double RoundToTwoDigit(double f);
 int CountLines(FILE *fp, int lineCounter);
 void
 GetArgs(int argc, char **argv, char **charPart, int argChar, int *useOwnScheduler, int *numProcessors, char **fileName);

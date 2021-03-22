@@ -68,7 +68,8 @@ input_node_ptr ReadFile(const char *fileName, FILE *fp) {// linked list to store
     // and store them into a linked list
     fp = fopen(fileName, "r");
     char* buffer = (char *) calloc(MAXLENGTH, sizeof(char));
-    int timeArrived = 0, processId = 0, executionTime = 0, parallelisable = 0;
+    unsigned int timeArrived = 0, processId = 0, executionTime = 0;
+    int parallelisable = 0;
     int* start = (int *) malloc(sizeof(int));
     if (start == NULL) exit(1);
     int* end = (int *) malloc(sizeof(int));
@@ -91,8 +92,8 @@ input_node_ptr ReadFile(const char *fileName, FILE *fp) {// linked list to store
 }
 
 void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int useOwnScheduler) {
-    int globalTimer = 0;
-    int totalDeltaTime = 0;
+    unsigned int globalTimer = 0;
+    unsigned int totalDeltaTime = 0;
     int numRunnedProcesses = 0;
     double maxTimeOverhead = 0;
     double totalTimeOverhead = 0;
@@ -169,7 +170,7 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
                 // and decrease remaining time by 1
                 // minRemainTimeProcess_ptr = FindMinRemainTimeProcess(pq);
                 if(minRemainTimeProcess_ptr->isRunning == 0) {
-                    printf("%d,RUNNING,pid=%d,remaining_time=%d,cpu=%d\n",
+                    printf("%u,RUNNING,pid=%u,remaining_time=%u,cpu=%d\n",
                            globalTimer,
                            minRemainTimeProcess_ptr->pid,
                            minRemainTimeProcess_ptr->remainingTime,
@@ -184,13 +185,13 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
 
             // check the shortest one, whether it is finished
             if (minRemainTimeProcess_ptr->remainingTime == 0) {
-                printf("%d,FINISHED,pid=%d,proc_remaining=%d\n",
+                printf("%u,FINISHED,pid=%u,proc_remaining=%d\n",
                        globalTimer,
                        minRemainTimeProcess_ptr->pid,
                        pq->size - 1);
 
                 // collect statistic data
-                int deltaTime = globalTimer - minRemainTimeProcess_ptr->arrivalTime;
+                unsigned int deltaTime = globalTimer - minRemainTimeProcess_ptr->arrivalTime;
                 totalDeltaTime += deltaTime;
                 double timeOverhead = (double)deltaTime / (minRemainTimeProcess_ptr->burstTime);
                 if(timeOverhead > maxTimeOverhead) {
@@ -217,7 +218,7 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
             // pick the shortest one to run
             // minRemainTimeProcess_ptr = FindMinRemainTimeProcess(pq);
             if(minRemainTimeProcess_ptr->isRunning == 0) {
-                printf("%d,RUNNING,pid=%d,remaining_time=%d,cpu=%d\n",
+                printf("%u,RUNNING,pid=%u,remaining_time=%u,cpu=%d\n",
                        globalTimer,
                        minRemainTimeProcess_ptr->pid,
                        minRemainTimeProcess_ptr->remainingTime,
@@ -229,13 +230,13 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
             globalTimer++;
             // check the shortest one, whether it is finished
             if (minRemainTimeProcess_ptr->remainingTime == 0) {
-                printf("%d,FINISHED,pid=%d,proc_remaining=%d\n",
+                printf("%u,FINISHED,pid=%u,proc_remaining=%d\n",
                        globalTimer,
                        minRemainTimeProcess_ptr->pid,
                        pq->size - 1);
 
                 // collect statistic data
-                int deltaTime = globalTimer - minRemainTimeProcess_ptr->arrivalTime;
+                unsigned int deltaTime = globalTimer - minRemainTimeProcess_ptr->arrivalTime;
                 totalDeltaTime += deltaTime;
                 double timeOverhead = (double)deltaTime / (minRemainTimeProcess_ptr->burstTime);
                 if(timeOverhead > maxTimeOverhead) {
@@ -277,8 +278,8 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
         }
 
         // setup hashtable
-        ht_setup(&parallelProcTable, sizeof(int), sizeof(input_node_t), numMainProcess);
-        ht_reserve(&parallelProcTable, numMainProcess);
+        ht_setup(&parallelProcTable, sizeof(unsigned int), sizeof(input_node_t), numMainProcess);
+        ht_reserve(&parallelProcTable, numMainProcess * 2);
 
         // if there are still items in the input_list
         while (input_list_head->next != NULL) {
@@ -382,7 +383,7 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
 
                             InsertPQ(createProcess(input_process_ptr->process_id,
                                                    input_process_ptr->time_arrived,
-                                                   (int)(ceil((double)(input_process_ptr->execution_time)/k) + 1),
+                                                   (unsigned int)(ceil((double)(input_process_ptr->execution_time)/k) + 1),
                                                    input_process_ptr->parallelisable,
                                                    smallRemainTimeCpuPQ->cpuId, subProcNo),
                                      smallRemainTimeCpuPQ);
@@ -438,7 +439,7 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
                     if(cpuMinProcess_ptr_list[i]->isParallelisable == 0) {
                         // if N
                         if(cpuMinProcess_ptr_list[i]->isRunning == 0) {
-                            printf("%d,RUNNING,pid=%d,remaining_time=%d,cpu=%d\n",
+                            printf("%u,RUNNING,pid=%u,remaining_time=%u,cpu=%d\n",
                                    globalTimer,
                                    cpuMinProcess_ptr_list[i]->pid,
                                    cpuMinProcess_ptr_list[i]->remainingTime,
@@ -451,7 +452,7 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
                     } else {
                         // if P
                         if(cpuMinProcess_ptr_list[i]->isRunning == 0) {
-                            printf("%d,RUNNING,pid=%d.%d,remaining_time=%d,cpu=%d\n",
+                            printf("%u,RUNNING,pid=%u.%d,remaining_time=%u,cpu=%d\n",
                                    globalTimer,
                                    cpuMinProcess_ptr_list[i]->pid,
                                    cpuMinProcess_ptr_list[i]->subProcNo,
@@ -481,13 +482,13 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
 
                     // if not P
                     if(cpuMinProcess_ptr_list[i]->isParallelisable == 0) {
-                        printf("%d,FINISHED,pid=%d,proc_remaining=%d\n",
+                        printf("%u,FINISHED,pid=%u,proc_remaining=%d\n",
                                globalTimer,
                                cpuMinProcess_ptr_list[i]->pid,
                                procCounter);
 
                         // collect statistic data
-                        int deltaTime = globalTimer - cpuMinProcess_ptr_list[i]->arrivalTime;
+                        unsigned int deltaTime = globalTimer - cpuMinProcess_ptr_list[i]->arrivalTime;
                         totalDeltaTime += deltaTime;
                         double timeOverhead = (double)deltaTime / (cpuMinProcess_ptr_list[i]->burstTime);
                         if(timeOverhead > maxTimeOverhead) {
@@ -512,18 +513,18 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
 
                         } else {
                             // if all sub proc are finished
-                            printf("%d,FINISHED,pid=%d,proc_remaining=%d\n",
+                            printf("%u,FINISHED,pid=%u,proc_remaining=%d\n",
                                    globalTimer,
                                    cpuMinProcess_ptr_list[i]->pid,
                                    procCounter);
 
                             // collect statistic data
-                            int deltaTime = globalTimer - cpuMinProcess_ptr_list[i]->arrivalTime;
+                            unsigned int deltaTime = globalTimer - cpuMinProcess_ptr_list[i]->arrivalTime;
                             totalDeltaTime += deltaTime;
 
                             // we need to use parallel's execution time here
                             // int execTime = findIndexByPid(parallelProcIndexList, cpuMinProcess_ptr_list[i]->pid)->execution_time;
-                            int execTime = ((input_node_t*) (ht_lookup(&parallelProcTable, &(cpuMinProcess_ptr_list[i]->pid))))->execution_time;
+                            unsigned int execTime = ((input_node_t*) (ht_lookup(&parallelProcTable, &(cpuMinProcess_ptr_list[i]->pid))))->execution_time;
                             double timeOverhead = (double)deltaTime / execTime;
 
                             if(timeOverhead > maxTimeOverhead) {
@@ -563,7 +564,7 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
                     if(cpuMinProcess_ptr_list[i]->isParallelisable == 0) {
                         // if N
                         if(cpuMinProcess_ptr_list[i]->isRunning == 0) {
-                            printf("%d,RUNNING,pid=%d,remaining_time=%d,cpu=%d\n",
+                            printf("%u,RUNNING,pid=%u,remaining_time=%u,cpu=%d\n",
                                    globalTimer,
                                    cpuMinProcess_ptr_list[i]->pid,
                                    cpuMinProcess_ptr_list[i]->remainingTime,
@@ -576,7 +577,7 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
                     } else {
                         // if P
                         if(cpuMinProcess_ptr_list[i]->isRunning == 0) {
-                            printf("%d,RUNNING,pid=%d.%d,remaining_time=%d,cpu=%d\n",
+                            printf("%u,RUNNING,pid=%u.%d,remaining_time=%u,cpu=%d\n",
                                    globalTimer,
                                    cpuMinProcess_ptr_list[i]->pid,
                                    cpuMinProcess_ptr_list[i]->subProcNo,
@@ -600,13 +601,13 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
                     if (cpuMinProcess_ptr_list[i]->remainingTime == 0) {
                         // if not P
                         if(cpuMinProcess_ptr_list[i]->isParallelisable == 0) {
-                            printf("%d,FINISHED,pid=%d,proc_remaining=%d\n",
+                            printf("%u,FINISHED,pid=%u,proc_remaining=%d\n",
                                    globalTimer,
                                    cpuMinProcess_ptr_list[i]->pid,
                                    procCounter);
 
                             // collect statistic data
-                            int deltaTime = globalTimer - cpuMinProcess_ptr_list[i]->arrivalTime;
+                            unsigned int deltaTime = globalTimer - cpuMinProcess_ptr_list[i]->arrivalTime;
                             totalDeltaTime += deltaTime;
                             double timeOverhead = (double)deltaTime / (cpuMinProcess_ptr_list[i]->burstTime);
                             if(timeOverhead > maxTimeOverhead) {
@@ -632,17 +633,17 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
 
                             } else {
                                 // if all sub proc are finished
-                                printf("%d,FINISHED,pid=%d,proc_remaining=%d\n",
+                                printf("%u,FINISHED,pid=%u,proc_remaining=%d\n",
                                        globalTimer,
                                        cpuMinProcess_ptr_list[i]->pid,
                                        procCounter);
 
                                 // collect statistic data
-                                int deltaTime = globalTimer - cpuMinProcess_ptr_list[i]->arrivalTime;
+                                unsigned int deltaTime = globalTimer - cpuMinProcess_ptr_list[i]->arrivalTime;
                                 totalDeltaTime += deltaTime;
 
                                 // we need to use parallel's execution time here
-                                int execTime = ((input_node_t*) (ht_lookup(&parallelProcTable, &(cpuMinProcess_ptr_list[i]->pid))))->execution_time;
+                                unsigned int execTime = ((input_node_t*) (ht_lookup(&parallelProcTable, &(cpuMinProcess_ptr_list[i]->pid))))->execution_time;
 
                                 double timeOverhead = (double)deltaTime / execTime;
 
@@ -679,19 +680,19 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
         ht_destroy(&parallelProcTable);
     }
 
-    printf("Turnaround time %d\n", RoundToInt((double)totalDeltaTime / numRunnedProcesses));
-    printf("Time overhead %g %g\n", RoundToTwoDigitFloat(maxTimeOverhead), RoundToTwoDigitFloat(totalTimeOverhead / numRunnedProcesses));
-    printf("Makespan %d\n", globalTimer);
+    printf("Turnaround time %u\n", RoundToInt((double)totalDeltaTime / numRunnedProcesses));
+    printf("Time overhead %g %g\n", RoundToTwoDigit(maxTimeOverhead), RoundToTwoDigit(totalTimeOverhead / numRunnedProcesses));
+    printf("Makespan %u\n", globalTimer);
 }
 
-int RoundToInt(double f)
+unsigned int RoundToInt(double f)
 {
-    int dint=(int) ceil(f);
+    unsigned int dint=(unsigned int) ceil(f);
 
     return dint;
 }
 
-float RoundToTwoDigitFloat(double f) {
-    return ((int)(f * 100 + 0.5)/ 100.0);
+double RoundToTwoDigit(double f) {
+    return ((unsigned int)(f * 100 + 0.5)/ 100.0);
     // return f;
 }

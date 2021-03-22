@@ -29,9 +29,10 @@ char* CutString(char* input, int start,int end) {
  *  input a line of record, index interval, and output the number
  *  converted from string.
  */
-int ExtractIntNumber(char* buffer, int* start, int* end) {
+unsigned int ExtractIntNumber(char* buffer, int* start, int* end) {
 
-    int i = 0, number = 0;
+    int i = 0;
+    unsigned int number = 0;
     char* catch = NULL;
     *start = *end + 1;
     *end = *start;
@@ -42,7 +43,7 @@ int ExtractIntNumber(char* buffer, int* start, int* end) {
     catch = CutString(buffer, *start, *end);
 
     /* convert string to integer number */
-    number = (int)strtol(catch, NULL, 10);
+    number = (unsigned int)strtoul(catch, NULL, 10);
     free(catch);
 
     return  number;

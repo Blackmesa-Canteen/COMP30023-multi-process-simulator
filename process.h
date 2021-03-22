@@ -6,12 +6,12 @@
 #define COMP30023_2021_PROJECT_1_PROCESS_H
 struct Process{
 
-    int pid;
-    int arrivalTime;
-    int burstTime;
-    int finishingTime;
-    int waitingTime;
-    int remainingTime;
+    unsigned int pid;
+    unsigned int arrivalTime;
+    unsigned int burstTime;
+    unsigned int finishingTime;
+    unsigned int waitingTime;
+    unsigned int remainingTime;
 
     int isRunning;
     int isParallelisable;
@@ -30,7 +30,7 @@ struct Heap {
 };
 typedef struct Heap* PQ_t;
 
-process_t* createProcess(int pid, int arrivalTime, int executionTime, int isParallelisable, int cpuId, int subProcNo);
+process_t* createProcess(unsigned int pid, unsigned int arrivalTime, unsigned int executionTime, int isParallelisable, int cpuId, int subProcNo);
 PQ_t InitializePQ(int numElements, int cpuId);
 void DestroyPQ(PQ_t head);
 void DropPQ(PQ_t head);
@@ -40,7 +40,7 @@ process_t* FindMinRemainTimeProcess(PQ_t head);
 int IsEmptyPQ(PQ_t head);
 int IsFullPQ(PQ_t head);
 
-int CountTotalRemainingTime(PQ_t head);
+unsigned int CountTotalRemainingTime(PQ_t head);
 int IsAllCpuPQEmpty(PQ_t* cpuPQList, int numCPU);
 int CountAllProcesses(PQ_t* cpuPQList, int numCPU);
 

@@ -7,9 +7,9 @@
 
 typedef struct node {
 
-    int time_arrived;
-    int process_id;
-    int execution_time;
+    unsigned int time_arrived;
+    unsigned int process_id;
+    unsigned int execution_time;
     int parallelisable;
     int numSubs;
     int remainNumSubs;
@@ -19,14 +19,14 @@ typedef struct node {
 
 typedef input_node_t* input_node_ptr;
 
-input_node_ptr InputListInsert(input_node_ptr head, int arrivalTime, int pid, int executionTime, int isParallel);
-input_node_ptr parallelIndexInsert(input_node_ptr head, int arrivalTime, int pid, int executionTime, int numSUbs);
+input_node_ptr InputListInsert(input_node_ptr head, unsigned int arrivalTime, unsigned int pid, unsigned int executionTime, int isParallel);
+input_node_ptr parallelIndexInsert(input_node_ptr head, unsigned int arrivalTime, unsigned int pid, unsigned int executionTime, int numSUbs);
 input_node_ptr destroyLinkList(input_node_ptr dummyHead);
 input_node_ptr GetFromInputList(input_node_ptr dummyHead);
 void UpdateInputList(input_node_ptr dummyHead);
 
-void removeIndexByPid(input_node_ptr dummyHead, int pid);
-input_node_ptr findIndexByPid(input_node_ptr dummyHead, int pid);
+void removeIndexByPid(input_node_ptr dummyHead, unsigned int pid);
+input_node_ptr findIndexByPid(input_node_ptr dummyHead, unsigned int pid);
 input_node_ptr SortInputListByRemain(input_node_ptr L);
 input_node_ptr SortInputListByPid(input_node_ptr L);
 input_node_ptr SortInputListByArrival(input_node_ptr L);
