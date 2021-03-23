@@ -1,7 +1,7 @@
 # Created by Xiaotian Li on Mar 23, 2021
 # A make file for Project 1
 allocate: main.o linkedlist.o sim.o process.o readFile.o hashtable.o
-	gcc -o allocate main.o linkedlist.o sim.o process.o readFile.o hashtable.o
+	gcc -o allocate main.o linkedlist.o sim.o process.o readFile.o hashtable.o -lm
 
 sim.o: sim.c sim.h linkedlist.h hashtable.h readFile.h process.h
 	gcc -c -Wall sim.c
@@ -22,4 +22,4 @@ linkedlist.o: linkedlist.c linkedlist.h
 	gcc -c -Wall linkedlist.c
 
 clean:
-	rm *.o
+	rm -f allocate *.o

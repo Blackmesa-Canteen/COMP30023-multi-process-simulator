@@ -1,6 +1,7 @@
 /**
- * Author: http://www.goldsborough.me/
+ * Original Author: http://www.goldsborough.me/
  * Original source: https://github.com/goldsborough/hashtable
+ * Edit By: Xiaotian
 */
 
 #include <assert.h>
@@ -30,67 +31,6 @@ int ht_setup(HashTable* table,
     table->hash = _ht_default_hash;
     table->compare = _ht_default_compare;
     table->size = 0;
-
-    return HT_SUCCESS;
-}
-
-int ht_copy(HashTable* first, HashTable* second) {
-    size_t chain;
-    HTNode* node;
-
-    assert(first != NULL);
-    assert(ht_is_initialized(second));
-
-    if (first == NULL) return HT_ERROR;
-    if (!ht_is_initialized(second)) return HT_ERROR;
-
-    if (_ht_allocate(first, second->capacity) == HT_ERROR) {
-        return HT_ERROR;
-    }
-
-    first->key_size = second->key_size;
-    first->value_size = second->value_size;
-    first->hash = second->hash;
-    first->compare = second->compare;
-    first->size = second->size;
-
-    for (chain = 0; chain < second->capacity; ++chain) {
-        for (node = second->nodes[chain]; node; node = node->next) {
-            if (_ht_push_front(first, chain, node->key, node->value) == HT_ERROR) {
-                return HT_ERROR;
-            }
-        }
-    }
-
-    return HT_SUCCESS;
-}
-
-int ht_move(HashTable* first, HashTable* second) {
-    assert(first != NULL);
-    assert(ht_is_initialized(second));
-
-    if (first == NULL) return HT_ERROR;
-    if (!ht_is_initialized(second)) return HT_ERROR;
-
-    *first = *second;
-    second->nodes = NULL;
-
-    return HT_SUCCESS;
-}
-
-int ht_swap(HashTable* first, HashTable* second) {
-    assert(ht_is_initialized(first));
-    assert(ht_is_initialized(second));
-
-    if (!ht_is_initialized(first)) return HT_ERROR;
-    if (!ht_is_initialized(second)) return HT_ERROR;
-
-    _ht_int_swap(&first->key_size, &second->key_size);
-    _ht_int_swap(&first->value_size, &second->value_size);
-    _ht_int_swap(&first->size, &second->size);
-    _ht_pointer_swap((void**)&first->hash, (void**)&second->hash);
-    _ht_pointer_swap((void**)&first->compare, (void**)&second->compare);
-    _ht_pointer_swap((void**)&first->nodes, (void**)&second->nodes);
 
     return HT_SUCCESS;
 }
@@ -186,64 +126,6 @@ void* ht_lookup(HashTable* table, void* key) {
     }
 
     return NULL;
-}
-
-const void* ht_const_lookup(const HashTable* table, void* key) {
-    const HTNode* node;
-    size_t index;
-
-    assert(table != NULL);
-    assert(key != NULL);
-
-    if (table == NULL) return NULL;
-    if (key == NULL) return NULL;
-
-    index = _ht_hash(table, key);
-    for (node = table->nodes[index]; node; node = node->next) {
-        if (_ht_equal(table, key, node->key)) {
-            return node->value;
-        }
-    }
-
-    return NULL;
-}
-
-int ht_erase(HashTable* table, void* key) {
-    HTNode* node;
-    HTNode* previous;
-    size_t index;
-
-    assert(table != NULL);
-    assert(key != NULL);
-
-    if (table == NULL) return HT_ERROR;
-    if (key == NULL) return HT_ERROR;
-
-    index = _ht_hash(table, key);
-    node = table->nodes[index];
-
-    for (previous = NULL; node; previous = node, node = node->next) {
-        if (_ht_equal(table, key, node->key)) {
-            if (previous) {
-                previous->next = node->next;
-            } else {
-                table->nodes[index] = node->next;
-            }
-
-            _ht_destroy_node(node);
-            --table->size;
-
-            if (_ht_should_shrink(table)) {
-                if (_ht_adjust_capacity(table) == HT_ERROR) {
-                    return HT_ERROR;
-                }
-            }
-
-            return HT_SUCCESS;
-        }
-    }
-
-    return HT_NOT_FOUND;
 }
 
 int ht_clear(HashTable* table) {
