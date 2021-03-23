@@ -9,7 +9,7 @@
 #include <math.h>
 
 #include "linkedlist.h"
-#include "hashtable.h"
+#include "myHashtable.h"
 #include "sim.h"
 #include "readFile.h"
 #include "process.h"
@@ -278,8 +278,8 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
         }
 
         // setup hashtable
-        ht_setup(&parallelProcTable, sizeof(unsigned int), sizeof(input_node_t), numMainProcess);
-        ht_reserve(&parallelProcTable, numMainProcess * 2);
+        InitHashtable(&parallelProcTable, sizeof(unsigned int), sizeof(input_node_t), numMainProcess);
+        reserveCapacityOfHashtable(&parallelProcTable, numMainProcess * 2);
 
         // if there are still items in the input_list
         while (input_list_head->next != NULL) {
@@ -340,7 +340,7 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
                 else if(input_process_ptr->parallelisable == 1) {
 
                     // if proc has NOT been added into indexList, add it
-                    if(!ht_contains(&parallelProcTable, &(input_process_ptr->process_id))) {
+                    if(!ContainsInHashtable(&parallelProcTable, &(input_process_ptr->process_id))) {
                         // decide num subProcesses
                         int k = 1;
 
@@ -365,7 +365,7 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
                         indexNode->parallelisable = 1;
                         indexNode->numSubs = k;
                         indexNode->time_arrived = input_process_ptr->time_arrived;
-                        ht_insert(&parallelProcTable, &(input_process_ptr->process_id), indexNode);
+                        InsertHashtable(&parallelProcTable, &(input_process_ptr->process_id), indexNode);
                         free(indexNode);
                         indexNode = NULL;
 
@@ -507,7 +507,7 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
                         }
 
                     } else {
-                        input_node_ptr mainProc = (input_node_t*) ht_lookup(&parallelProcTable, &(cpuMinProcess_ptr_list[i]->pid));
+                        input_node_ptr mainProc = (input_node_t*) FindFromHashtable(&parallelProcTable, &(cpuMinProcess_ptr_list[i]->pid));
                         if(mainProc->remainNumSubs > 1) {
                             mainProc->remainNumSubs -= 1;
 
@@ -524,7 +524,7 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
 
                             // we need to use parallel's execution time here
                             // int execTime = findIndexByPid(parallelProcIndexList, cpuMinProcess_ptr_list[i]->pid)->execution_time;
-                            unsigned int execTime = ((input_node_t*) (ht_lookup(&parallelProcTable, &(cpuMinProcess_ptr_list[i]->pid))))->execution_time;
+                            unsigned int execTime = ((input_node_t*) (FindFromHashtable(&parallelProcTable, &(cpuMinProcess_ptr_list[i]->pid))))->execution_time;
                             double timeOverhead = (double)deltaTime / execTime;
 
                             if(timeOverhead > maxTimeOverhead) {
@@ -626,7 +626,7 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
                             }
 
                         } else {
-                            input_node_ptr mainProc = (input_node_t*) ht_lookup(&parallelProcTable, &(cpuMinProcess_ptr_list[i]->pid));
+                            input_node_ptr mainProc = (input_node_t*) FindFromHashtable(&parallelProcTable, &(cpuMinProcess_ptr_list[i]->pid));
 
                             if(mainProc->remainNumSubs > 1) {
                                 mainProc->remainNumSubs -= 1;
@@ -643,7 +643,7 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
                                 totalDeltaTime += deltaTime;
 
                                 // we need to use parallel's execution time here
-                                unsigned int execTime = ((input_node_t*) (ht_lookup(&parallelProcTable, &(cpuMinProcess_ptr_list[i]->pid))))->execution_time;
+                                unsigned int execTime = ((input_node_t*) (FindFromHashtable(&parallelProcTable, &(cpuMinProcess_ptr_list[i]->pid))))->execution_time;
 
                                 double timeOverhead = (double)deltaTime / execTime;
 
@@ -676,8 +676,7 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
         }
         free(cpuPQList);
         free(cpuMinProcess_ptr_list);
-        ht_clear(&parallelProcTable);
-        ht_destroy(&parallelProcTable);
+        CleanAndDestroyHashtable(&parallelProcTable);
     }
 
     printf("Turnaround time %u\n", RoundToInt((double)totalDeltaTime / numRunnedProcesses));

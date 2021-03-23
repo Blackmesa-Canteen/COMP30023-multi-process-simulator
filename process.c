@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "process.h"
-#include "hashtable.h"
+#include "myHashtable.h"
 
 #define MIN_INT 0
 
@@ -195,8 +195,8 @@ unsigned int CountTotalRemainingTime(PQ_t head) {
 
 int CountAllProcesses(PQ_t* cpuPQList, int numCPU) {
     HashTable countTable;
-    ht_setup(&countTable, sizeof (unsigned int), sizeof (int), 512);
-    ht_reserve(&countTable, 512 * 2);
+    InitHashtable(&countTable, sizeof (unsigned int), sizeof (int), 512);
+    reserveCapacityOfHashtable(&countTable, 512 * 2);
     int res = 0;
 
     for(int i = 0; i < numCPU; i++) {
@@ -210,9 +210,9 @@ int CountAllProcesses(PQ_t* cpuPQList, int numCPU) {
                 if(cpuPQList[i]->processes[j]->isParallelisable == 0) {
                     res++;
                 } else {
-                    if(!ht_contains(&countTable, &(cpuPQList[i]->processes[j]->pid))) {
+                    if(!ContainsInHashtable(&countTable, &(cpuPQList[i]->processes[j]->pid))) {
                         res++;
-                        ht_insert(&countTable, &(cpuPQList[i]->processes[j]->pid), &res);
+                        InsertHashtable(&countTable, &(cpuPQList[i]->processes[j]->pid), &res);
                     }
                 }
 
@@ -221,8 +221,7 @@ int CountAllProcesses(PQ_t* cpuPQList, int numCPU) {
 
 
     }
-    ht_clear(&countTable);
-    ht_destroy(&countTable);
+    CleanAndDestroyHashtable(&countTable);
     return res;
 }
 
