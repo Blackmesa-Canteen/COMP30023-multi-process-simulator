@@ -91,7 +91,7 @@ input_node_ptr ReadFile(const char *fileName, FILE *fp) {// linked list to store
 }
 
 void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int useOwnScheduler) {
-    unsigned int globalTimer = 0;
+    unsigned long globalTimer = 0;
     unsigned int totalDeltaTime = 0;
     int numRunnedProcesses = 0;
     double maxTimeOverhead = 0;
@@ -115,11 +115,11 @@ void SimRun(input_node_ptr input_list_head, int numMainProcess, int numCPU, int 
     printf("Turnaround time %u\n", RoundToInt((double) totalDeltaTime / numRunnedProcesses));
     printf("Time overhead %g %g\n", RoundToTwoDigit(maxTimeOverhead),
            RoundToTwoDigit(totalTimeOverhead / numRunnedProcesses));
-    printf("Makespan %u\n", globalTimer);
+    printf("Makespan %ld\n", globalTimer);
 }
 
 void HandleOneCPU(input_node_ptr input_list_head, int numMainProcess, input_node_ptr input_process_ptr,
-                  unsigned int *globalTimer, unsigned int *totalDeltaTime, int *numRunnedProcesses,
+                  unsigned long *globalTimer, unsigned int *totalDeltaTime, int *numRunnedProcesses,
                   double *maxTimeOverhead, double *totalTimeOverhead) {
     input_list_head = SortInputListByPid(input_list_head);
     input_list_head = SortInputListByArrival(input_list_head);
@@ -143,7 +143,7 @@ void HandleOneCPU(input_node_ptr input_list_head, int numMainProcess, input_node
 }
 
 void HandleMultiCPU(input_node_ptr input_list_head, int numMainProcess, int numCPU, HashTable *parallelProcTable,
-                    input_node_ptr input_process_ptr, unsigned int *globalTimer, unsigned int *totalDeltaTime,
+                    input_node_ptr input_process_ptr, unsigned long *globalTimer, unsigned int *totalDeltaTime,
                     int *numRunnedProcesses, double *maxTimeOverhead, double *totalTimeOverhead) {
 
     input_list_head = SortInputListByPid(input_list_head);
@@ -178,7 +178,7 @@ void HandleMultiCPU(input_node_ptr input_list_head, int numMainProcess, int numC
 
 
 process_t *
-HandleArrivingProcOnOneCpu(input_node_ptr input_list_head, input_node_ptr input_process_ptr, unsigned int *globalTimer,
+HandleArrivingProcOnOneCpu(input_node_ptr input_list_head, input_node_ptr input_process_ptr, unsigned long *globalTimer,
                            unsigned int *totalDeltaTime, int *numRunnedProcesses, double *maxTimeOverhead,
                            double *totalTimeOverhead, PQ_t pq,
                            process_t *minRemainTimeProcess_ptr) {// if there are still items in the input_list
@@ -239,7 +239,7 @@ HandleArrivingProcOnOneCpu(input_node_ptr input_list_head, input_node_ptr input_
             // and decrease remaining time by 1
             // minRemainTimeProcess_ptr = FindMinRemainTimeProcess(pq);
             if (minRemainTimeProcess_ptr->isRunning == 0) {
-                printf("%u,RUNNING,pid=%u,remaining_time=%u,cpu=%d\n",
+                printf("%ld,RUNNING,pid=%u,remaining_time=%u,cpu=%d\n",
                        (*globalTimer),
                        minRemainTimeProcess_ptr->pid,
                        minRemainTimeProcess_ptr->remainingTime,
@@ -254,7 +254,7 @@ HandleArrivingProcOnOneCpu(input_node_ptr input_list_head, input_node_ptr input_
 
         // check the shortest one, whether it is finished
         if (minRemainTimeProcess_ptr->remainingTime == 0) {
-            printf("%u,FINISHED,pid=%u,proc_remaining=%d\n",
+            printf("%ld,FINISHED,pid=%u,proc_remaining=%d\n",
                    (*globalTimer),
                    minRemainTimeProcess_ptr->pid,
                    pq->size - 1);
@@ -284,14 +284,14 @@ HandleArrivingProcOnOneCpu(input_node_ptr input_list_head, input_node_ptr input_
     return minRemainTimeProcess_ptr;
 }
 
-void HandleRemainProcOnOneCPU(unsigned int *globalTimer, unsigned int *totalDeltaTime, int *numRunnedProcesses,
+void HandleRemainProcOnOneCPU(unsigned long *globalTimer, unsigned int *totalDeltaTime, int *numRunnedProcesses,
                               double *maxTimeOverhead, double *totalTimeOverhead, PQ_t pq,
                               process_t *minRemainTimeProcess_ptr) {
     while (!IsEmptyPQ(pq)) {
         // pick the shortest one to run
         // minRemainTimeProcess_ptr = FindMinRemainTimeProcess(pq);
         if (minRemainTimeProcess_ptr->isRunning == 0) {
-            printf("%u,RUNNING,pid=%u,remaining_time=%u,cpu=%d\n",
+            printf("%ld,RUNNING,pid=%u,remaining_time=%u,cpu=%d\n",
                    (*globalTimer),
                    minRemainTimeProcess_ptr->pid,
                    minRemainTimeProcess_ptr->remainingTime,
@@ -303,7 +303,7 @@ void HandleRemainProcOnOneCPU(unsigned int *globalTimer, unsigned int *totalDelt
         (*globalTimer)++;
         // check the shortest one, whether it is finished
         if (minRemainTimeProcess_ptr->remainingTime == 0) {
-            printf("%u,FINISHED,pid=%u,proc_remaining=%d\n",
+            printf("%ld,FINISHED,pid=%u,proc_remaining=%d\n",
                    (*globalTimer),
                    minRemainTimeProcess_ptr->pid,
                    pq->size - 1);
@@ -347,7 +347,7 @@ void InitMemCpuForMultiProc(int numMainProcess, int numCPU, HashTable *parallelP
 }
 
 void HandleArrivingProcOnMultiCpu(input_node_ptr input_list_head, int numCPU, HashTable *parallelProcTable,
-                                  input_node_ptr input_process_ptr, unsigned int *globalTimer,
+                                  input_node_ptr input_process_ptr, unsigned long *globalTimer,
                                   unsigned int *totalDeltaTime, int *numRunnedProcesses, double *maxTimeOverhead,
                                   double *totalTimeOverhead, int procCounter, PQ_t *cpuPQList,
                                   process_t **cpuMinProcess_ptr_list) {// if there are still items in the input_list
@@ -509,7 +509,7 @@ void HandleArrivingProcOnMultiCpu(input_node_ptr input_list_head, int numCPU, Ha
                 if (cpuMinProcess_ptr_list[i]->isParallelisable == 0) {
                     // if N
                     if (cpuMinProcess_ptr_list[i]->isRunning == 0) {
-                        printf("%u,RUNNING,pid=%u,remaining_time=%u,cpu=%d\n",
+                        printf("%ld,RUNNING,pid=%u,remaining_time=%u,cpu=%d\n",
                                (*globalTimer),
                                cpuMinProcess_ptr_list[i]->pid,
                                cpuMinProcess_ptr_list[i]->remainingTime,
@@ -522,7 +522,7 @@ void HandleArrivingProcOnMultiCpu(input_node_ptr input_list_head, int numCPU, Ha
                 } else {
                     // if P
                     if (cpuMinProcess_ptr_list[i]->isRunning == 0) {
-                        printf("%u,RUNNING,pid=%u.%d,remaining_time=%u,cpu=%d\n",
+                        printf("%ld,RUNNING,pid=%u.%d,remaining_time=%u,cpu=%d\n",
                                (*globalTimer),
                                cpuMinProcess_ptr_list[i]->pid,
                                cpuMinProcess_ptr_list[i]->subProcNo,
@@ -552,7 +552,7 @@ void HandleArrivingProcOnMultiCpu(input_node_ptr input_list_head, int numCPU, Ha
 
                 // if not P
                 if (cpuMinProcess_ptr_list[i]->isParallelisable == 0) {
-                    printf("%u,FINISHED,pid=%u,proc_remaining=%d\n",
+                    printf("%ld,FINISHED,pid=%u,proc_remaining=%d\n",
                            (*globalTimer),
                            cpuMinProcess_ptr_list[i]->pid,
                            procCounter);
@@ -584,7 +584,7 @@ void HandleArrivingProcOnMultiCpu(input_node_ptr input_list_head, int numCPU, Ha
 
                     } else {
                         // if all sub proc are finished
-                        printf("%u,FINISHED,pid=%u,proc_remaining=%d\n",
+                        printf("%ld,FINISHED,pid=%u,proc_remaining=%d\n",
                                (*globalTimer),
                                cpuMinProcess_ptr_list[i]->pid,
                                procCounter);
@@ -625,7 +625,7 @@ void HandleArrivingProcOnMultiCpu(input_node_ptr input_list_head, int numCPU, Ha
     free(input_list_head);
 }
 
-void HandleRemainProcOnMultiCPU(int numCPU, HashTable *parallelProcTable, unsigned int *globalTimer,
+void HandleRemainProcOnMultiCPU(int numCPU, HashTable *parallelProcTable, unsigned long *globalTimer,
                                 unsigned int *totalDeltaTime, int *numRunnedProcesses, double *maxTimeOverhead,
                                 double *totalTimeOverhead, int procCounter, PQ_t *cpuPQList,
                                 process_t **cpuMinProcess_ptr_list) {
@@ -639,7 +639,7 @@ void HandleRemainProcOnMultiCPU(int numCPU, HashTable *parallelProcTable, unsign
                 if (cpuMinProcess_ptr_list[i]->isParallelisable == 0) {
                     // if N
                     if (cpuMinProcess_ptr_list[i]->isRunning == 0) {
-                        printf("%u,RUNNING,pid=%u,remaining_time=%u,cpu=%d\n",
+                        printf("%ld,RUNNING,pid=%u,remaining_time=%u,cpu=%d\n",
                                (*globalTimer),
                                cpuMinProcess_ptr_list[i]->pid,
                                cpuMinProcess_ptr_list[i]->remainingTime,
@@ -652,7 +652,7 @@ void HandleRemainProcOnMultiCPU(int numCPU, HashTable *parallelProcTable, unsign
                 } else {
                     // if P
                     if (cpuMinProcess_ptr_list[i]->isRunning == 0) {
-                        printf("%u,RUNNING,pid=%u.%d,remaining_time=%u,cpu=%d\n",
+                        printf("%ld,RUNNING,pid=%u.%d,remaining_time=%u,cpu=%d\n",
                                (*globalTimer),
                                cpuMinProcess_ptr_list[i]->pid,
                                cpuMinProcess_ptr_list[i]->subProcNo,
@@ -676,7 +676,7 @@ void HandleRemainProcOnMultiCPU(int numCPU, HashTable *parallelProcTable, unsign
                 if (cpuMinProcess_ptr_list[i]->remainingTime == 0) {
                     // if not P
                     if (cpuMinProcess_ptr_list[i]->isParallelisable == 0) {
-                        printf("%u,FINISHED,pid=%u,proc_remaining=%d\n",
+                        printf("%ld,FINISHED,pid=%u,proc_remaining=%d\n",
                                (*globalTimer),
                                cpuMinProcess_ptr_list[i]->pid,
                                procCounter);
@@ -709,7 +709,7 @@ void HandleRemainProcOnMultiCPU(int numCPU, HashTable *parallelProcTable, unsign
 
                         } else {
                             // if all sub proc are finished
-                            printf("%u,FINISHED,pid=%u,proc_remaining=%d\n",
+                            printf("%ld,FINISHED,pid=%u,proc_remaining=%d\n",
                                    (*globalTimer),
                                    cpuMinProcess_ptr_list[i]->pid,
                                    procCounter);
