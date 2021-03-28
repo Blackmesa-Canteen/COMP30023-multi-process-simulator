@@ -26,6 +26,7 @@ int htAllocate(HashTable* table, size_t capacity);
 int htResize(HashTable* table, size_t new_capacity);
 void htRehash(HashTable* table, TableNode** old, size_t old_capacity);
 
+/* init hashtable with capacity, and sizeof(key) and sizeof(value) */
 int InitHashtable(HashTable* table,
                   size_t keySize,
                   size_t valueSize,
@@ -55,6 +56,7 @@ int InitHashtable(HashTable* table,
     return 0;
 }
 
+/* https://github.com/goldsborough/hashtable */
 int reserveCapacityOfHashtable(HashTable* table, size_t minimumCapacity) {
     if (!HashtableIsInitialized(table)) {
         printf("Reserve capacity of hashtable error!\n");
@@ -66,6 +68,8 @@ int reserveCapacityOfHashtable(HashTable* table, size_t minimumCapacity) {
 
     return 0;
 }
+
+/* check is hashtable initialized */
 int HashtableIsInitialized(HashTable* table) {
     if(table != NULL && table->nodes != NULL) {
         return 1;
@@ -74,6 +78,7 @@ int HashtableIsInitialized(HashTable* table) {
     return 0;
 }
 
+/* destroy hashtable */
 int CleanAndDestroyHashtable(HashTable* table) {
     if (table == NULL || table->nodes == NULL) {
         printf("Destoy hashtable error!\n");
@@ -105,6 +110,7 @@ int CleanAndDestroyHashtable(HashTable* table) {
     return 0;
 }
 
+/* insert key-value into the hashtable */
 int InsertHashtable(HashTable* table, void* key, void* value) {
     if(!HashtableIsInitialized(table) || key == NULL) {
         printf("Insert hashtable error!\n");
@@ -139,6 +145,7 @@ int InsertHashtable(HashTable* table, void* key, void* value) {
     return 0;
 }
 
+/* check key is contained */
 int ContainsInHashtable(HashTable* table, void* key) {
     if (!HashtableIsInitialized(table) || key == NULL) {
         printf("detect contain in hashtable error!\n");
@@ -159,6 +166,7 @@ int ContainsInHashtable(HashTable* table, void* key) {
     return 0;
 }
 
+/* return the value by the key */
 void* FindFromHashtable(HashTable* table, void* key) {
     if(table == NULL || key == NULL) {
         return NULL;
@@ -179,8 +187,8 @@ void* FindFromHashtable(HashTable* table, void* key) {
 }
 
 
+/* default hash algorithm www.cse.yorku.ca/~oz/hash.ssml*/
 size_t defaultHash(void* raw_key, size_t key_size) {
-    // hash algorithm: www.cse.yorku.ca/~oz/hash.ssml
     size_t hash = 5381;
     size_t byte;
     char* key = raw_key;
@@ -191,18 +199,26 @@ size_t defaultHash(void* raw_key, size_t key_size) {
 
     return hash;
 }
+
+/* compare two keys */
 int defaultCompare(void* first_key, void* second_key, size_t key_size) {
     return memcmp(first_key, second_key, key_size);
 }
+
+/* hash the key */
 size_t htHash(const HashTable* table, void* key) {
     size_t res = table->hash(key, table->key_size) % table->capacity;
 
     return res;
 }
+
+/* compare the key */
 int htEqual(const HashTable* table, void* first_key, void* second_key) {
     int res = table->compare(first_key, second_key, table->key_size) == 0;
     return res;
 }
+
+/* check the table whether needs to resize */
 int htShouldGrow(HashTable* table) {
     if(table->size > table->capacity) {
         printf("check increment of table-> size!\n");
@@ -213,6 +229,7 @@ int htShouldGrow(HashTable* table) {
     return table->size == table->capacity;
 }
 
+/* create hashtable node*/
 TableNode* htCreateNode(HashTable* table, void* key, void* value, TableNode* next) {
     if(table == NULL || key == NULL || value == NULL) {
         printf("failed to create hashtable node \n");
@@ -237,12 +254,15 @@ TableNode* htCreateNode(HashTable* table, void* key, void* value, TableNode* nex
     return newNode;
 }
 
+/* push key-value into hashtable */
 int htPushFront(HashTable* table, size_t index, void* key, void* value) {
     table->nodes[index] = htCreateNode(table, key, value, table->nodes[index]);
 
     // if managed push in, return 0
     return table->nodes[index] == NULL ? -1 : 0;
 }
+
+/* destroy one hashtable node */
 void htDestroyNode(TableNode* node) {
     if(node == NULL) {
         printf("failed to destroy hashtable node, node is NULL \n");
@@ -254,10 +274,12 @@ void htDestroyNode(TableNode* node) {
     free(node);
     node = NULL;
 }
+
 int htAdjustCapacity(HashTable* table) {
     // double size
     return htResize(table, table->size * 2);
 }
+
 int htAllocate(HashTable* table, size_t capacity) {
     if ((table->nodes = malloc(capacity * sizeof(TableNode *))) == NULL) {
         return -1;
@@ -269,6 +291,7 @@ int htAllocate(HashTable* table, size_t capacity) {
 
     return 0;
 }
+
 int htResize(HashTable* table, size_t new_capacity) {
     TableNode ** old;
     size_t old_capacity;
@@ -294,6 +317,7 @@ int htResize(HashTable* table, size_t new_capacity) {
 
     return 0;
 }
+/* collision or resize the hashtable, need to rehash old keys */
 void htRehash(HashTable* table, TableNode** old, size_t old_capacity) {
     TableNode* node;
     TableNode* next;

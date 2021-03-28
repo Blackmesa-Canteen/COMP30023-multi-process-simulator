@@ -1,0 +1,1 @@
+In the original algorithm, a process with a long remaining running time would always be blocked, causing starvation. A new algorithm is needed that prioritizes short jobs under normal circumstances, but can also turn long jobs into prioritizable jobs when they have waited long enough.
