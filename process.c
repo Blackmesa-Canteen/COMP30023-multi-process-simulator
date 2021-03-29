@@ -235,3 +235,18 @@ int IsAllCpuPQEmpty(PQ_t* cpuPQList, int numCPU) {
 
     return 1;
 }
+
+/* find the remaining time one from pq */
+int isFindProcessPid(PQ_t head, unsigned int pid) {
+    if(IsEmptyPQ(head)) {
+        return 0;
+    }
+
+    for(int i = 1; i <= head->size; i++) {
+        if(head->processes[i]->pid == pid) {
+            return 1;
+        }
+    }
+
+    return 0;
+}

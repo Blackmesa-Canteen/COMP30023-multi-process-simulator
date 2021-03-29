@@ -39,6 +39,7 @@ process_t* DeleteMinRemainTimeProcess(PQ_t head);
 process_t* FindMinRemainTimeProcess(PQ_t head);
 int IsEmptyPQ(PQ_t head);
 int IsFullPQ(PQ_t head);
+int isFindProcessPid(PQ_t head, unsigned int pid);
 
 unsigned int CountTotalRemainingTime(PQ_t head);
 int IsAllCpuPQEmpty(PQ_t* cpuPQList, int numCPU);

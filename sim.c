@@ -444,9 +444,23 @@ void HandleArrivingProcOnMultiCpu(input_node_ptr input_list_head, int numCPU, Ha
                         // pick one cpu to add sub processes
                         PQ_t smallRemainTimeCpuPQ = cpuPQList[0];
                         int i = 0;
-                        for (i = 0; i < numCPU; i++) {
+
+                        // handle all parallel runs into the same cpu
+                        if(isFindProcessPid(cpuPQList[0], input_process_ptr->process_id)) {
+                            // if cpu 0 has been occupied by son proc, pick the rest mininum cpu as second min
+                            i = 1;
+                            smallRemainTimeCpuPQ = cpuPQList[1];
+                        } else {
+                            i = 0;
+                        }
+
+                        for (; i < numCPU; i++) {
                             if (CountTotalRemainingTime(smallRemainTimeCpuPQ) > CountTotalRemainingTime(cpuPQList[i])) {
-                                smallRemainTimeCpuPQ = cpuPQList[i];
+                                // handle all parallel runs into the same cpu
+                                if(!isFindProcessPid(cpuPQList[i], input_process_ptr->process_id)) {
+                                    // find the min, except son proc occupied cpu
+                                    smallRemainTimeCpuPQ = cpuPQList[i];
+                                }
                             }
                         }
 
