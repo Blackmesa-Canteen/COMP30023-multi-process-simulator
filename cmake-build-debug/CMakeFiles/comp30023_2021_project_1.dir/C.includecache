@@ -1,0 +1,48 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/Users/shaotienlee/Desktop/Study/Courses/semster-2/Computer systems/projects/comp30023-2021-project-1/linkedlist.h
+
+/Users/shaotienlee/Desktop/Study/Courses/semster-2/Computer systems/projects/comp30023-2021-project-1/myHashtable.h
+stddef.h
+-
+
+/Users/shaotienlee/Desktop/Study/Courses/semster-2/Computer systems/projects/comp30023-2021-project-1/process.h
+
+/Users/shaotienlee/Desktop/Study/Courses/semster-2/Computer systems/projects/comp30023-2021-project-1/readFile.h
+
+/Users/shaotienlee/Desktop/Study/Courses/semster-2/Computer systems/projects/comp30023-2021-project-1/sim.c
+stdio.h
+-
+stdlib.h
+-
+ctype.h
+-
+unistd.h
+-
+string.h
+-
+math.h
+-
+linkedlist.h
+/Users/shaotienlee/Desktop/Study/Courses/semster-2/Computer systems/projects/comp30023-2021-project-1/linkedlist.h
+myHashtable.h
+/Users/shaotienlee/Desktop/Study/Courses/semster-2/Computer systems/projects/comp30023-2021-project-1/myHashtable.h
+sim.h
+/Users/shaotienlee/Desktop/Study/Courses/semster-2/Computer systems/projects/comp30023-2021-project-1/sim.h
+readFile.h
+/Users/shaotienlee/Desktop/Study/Courses/semster-2/Computer systems/projects/comp30023-2021-project-1/readFile.h
+process.h
+/Users/shaotienlee/Desktop/Study/Courses/semster-2/Computer systems/projects/comp30023-2021-project-1/process.h
+
+/Users/shaotienlee/Desktop/Study/Courses/semster-2/Computer systems/projects/comp30023-2021-project-1/sim.h
+process.h
+/Users/shaotienlee/Desktop/Study/Courses/semster-2/Computer systems/projects/comp30023-2021-project-1/process.h
+myHashtable.h
+/Users/shaotienlee/Desktop/Study/Courses/semster-2/Computer systems/projects/comp30023-2021-project-1/myHashtable.h
+
